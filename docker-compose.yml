@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  search-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: search-demo
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3000}
+    networks:
+      - demo-net
+
+networks:
+  demo-net:
+    driver: bridge
+
