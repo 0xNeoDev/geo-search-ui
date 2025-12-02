@@ -145,17 +145,17 @@ export function SearchResults({
 	}
 
 	return (
-		<div className="h-full overflow-y-auto overflow-x-hidden space-y-2 text-left pr-1">
+		<div className="h-full overflow-y-auto overflow-x-hidden space-y-2 text-left pr-1 min-w-0">
 			{results
 				.map((result) => {
 					const resultKey = `${result.entityId}-${result.spaceId}`
 					return (
 						<Card
 							key={resultKey}
-							className="cursor-pointer hover:bg-accent/50 transition-colors border-border text-left"
+							className="cursor-pointer hover:bg-accent/50 transition-colors border-border text-left w-full overflow-hidden"
 						>
-							<CardContent className="p-4 text-left">
-								<div className="font-semibold text-base mb-1 text-left">{result.name}</div>
+							<CardContent className="p-4 text-left overflow-hidden">
+								<div className="font-semibold text-base mb-1 text-left truncate" title={result.name}>{result.name}</div>
 								{result.description && (
 									<ExpandableDescription 
 										description={result.description} 

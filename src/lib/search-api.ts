@@ -1,14 +1,14 @@
-import type { SearchResult, SearchParams, SearchScope } from "@/types"
+import type { SearchParams, SearchResponse } from "@/types"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
 
 export async function searchEntities(
 	params: SearchParams,
-): Promise<SearchResult[]> {
+): Promise<SearchResponse> {
 	const { query, scope, spaceId, useSemantic } = params
 
 	if (!query.trim()) {
-		return []
+		return { results: [], total: 0, tookMs: 0 }
 	}
 
 	const searchParams = new URLSearchParams({
@@ -36,8 +36,8 @@ export async function searchEntities(
 			throw new Error(error.error || "Search failed")
 		}
 
-		const results: SearchResult[] = await response.json()
-		return results
+		const data: SearchResponse = await response.json()
+		return data
 	} catch (error) {
 		console.error("Search API error:", error)
 		throw error

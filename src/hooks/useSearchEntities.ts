@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { searchEntities } from "@/lib/search-api"
-import type { SearchParams, SearchScope, SearchResult } from "@/types"
+import type { SearchParams, SearchScope, SearchResponse } from "@/types"
 
 export function useSearchEntities(
 	query: string,
@@ -22,7 +22,7 @@ export function useSearchEntities(
 		...(useSemantic !== undefined && { useSemantic }),
 	}
 
-	return useQuery<SearchResult[]>({
+	return useQuery<SearchResponse>({
 		queryKey,
 		queryFn: () => searchEntities(params),
 		enabled:

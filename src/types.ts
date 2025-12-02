@@ -15,6 +15,13 @@ export interface SearchResult {
 	entityGlobalScore?: number
 	spaceScore?: number
 	entitySpaceScore?: number
+	relevanceScore?: number
+}
+
+export interface SearchResponse {
+	results: SearchResult[]
+	total: number
+	tookMs: number
 }
 
 export interface SearchParams {

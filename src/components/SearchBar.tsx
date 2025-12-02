@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
-import { Search, X } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Search, X, Info } from "lucide-react"
 import { SearchResults } from "./SearchResults"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useSearchEntities } from "@/hooks/useSearchEntities"
@@ -53,7 +54,9 @@ export function SearchBar({ scope, spaceId, useSemantic }: SearchBarProps) {
 		error: queryError,
 	} = useSearchEntities(debouncedQuery, scope, spaceId, useSemantic)
 
-	const results: SearchResult[] = (data ?? []) as SearchResult[]
+	const results: SearchResult[] = data?.results ?? []
+	const tookMs = data?.tookMs
+	const total = data?.total
 
 	// Convert query error to string for display
 	const error =
@@ -78,7 +81,7 @@ export function SearchBar({ scope, spaceId, useSemantic }: SearchBarProps) {
 	}
 
 	return (
-		<div className="w-full h-full flex flex-col min-h-0">
+		<div className="w-full h-full flex flex-col min-h-0 min-w-0">
 			<div className="relative flex-shrink-0">
 				<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
 				<Input
@@ -106,7 +109,36 @@ export function SearchBar({ scope, spaceId, useSemantic }: SearchBarProps) {
 				</div>
 			)}
 
-			<div className="flex-1 min-h-0 mt-4">
+			{!isLoading && tookMs !== undefined && results.length > 0 && (
+				<div className="mt-2 text-xs text-muted-foreground/60 flex-shrink-0 flex items-center gap-1">
+					<span>
+						{total !== undefined ? total.toLocaleString() : results.length.toLocaleString()} total
+					</span>
+					{total !== undefined && total >= 10000 && (
+						<Popover>
+							<PopoverTrigger asChild>
+								<button 
+									className="inline-flex items-center hover:text-muted-foreground transition-colors"
+									aria-label="More info about results"
+								>
+									<Info className="h-3 w-3" />
+								</button>
+							</PopoverTrigger>
+							<PopoverContent 
+								className="w-56 text-xs p-2" 
+								side="right" 
+								align="center"
+							>
+								There may be more documents that match, but the maximum returned total is 10,000.
+							</PopoverContent>
+						</Popover>
+					)}
+					<span className="text-muted-foreground/40">·</span>
+					<span>{tookMs}ms</span>
+				</div>
+			)}
+
+			<div className="flex-1 min-h-0 mt-2">
 				<SearchResults
 					results={results}
 					isLoading={isLoading}
