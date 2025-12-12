@@ -11,10 +11,9 @@ import type { SearchScope, SearchResult } from "@/types"
 interface SearchBarProps {
 	scope: SearchScope
 	spaceId?: string
-	useSemantic?: boolean
 }
 
-export function SearchBar({ scope, spaceId, useSemantic }: SearchBarProps) {
+export function SearchBar({ scope, spaceId }: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams()
 	
 	// Initialize query from URL params (only on mount)
@@ -52,7 +51,7 @@ export function SearchBar({ scope, spaceId, useSemantic }: SearchBarProps) {
 		data,
 		isLoading,
 		error: queryError,
-	} = useSearchEntities(debouncedQuery, scope, spaceId, useSemantic)
+	} = useSearchEntities(debouncedQuery, scope, spaceId)
 
 	const results: SearchResult[] = data?.results ?? []
 	const tookMs = data?.tookMs

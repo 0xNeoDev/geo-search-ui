@@ -28,6 +28,5 @@ export interface SearchParams {
 	query: string
 	scope: SearchScope
 	spaceId?: string
-	useSemantic?: boolean
 }
 

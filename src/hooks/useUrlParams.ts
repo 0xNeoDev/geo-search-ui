@@ -5,7 +5,6 @@ interface UrlParams {
 	query?: string
 	scope?: SearchScope
 	spaceId?: string
-	useSemantic?: boolean
 }
 
 export function useUrlParams() {
@@ -38,26 +37,16 @@ export function useUrlParams() {
 			}
 		}
 		
-		if ("useSemantic" in params) {
-			if (params.useSemantic !== undefined) {
-				url.searchParams.set("useSemantic", params.useSemantic ? "true" : "false")
-			} else {
-				url.searchParams.delete("useSemantic")
-			}
-		}
-		
 		// Update URL without page reload
 		window.history.replaceState({}, "", url.toString())
 	}, [])
 
 	const getUrlParams = useCallback((): UrlParams => {
 		const params = new URLSearchParams(window.location.search)
-		const useSemanticParam = params.get("useSemantic")
 		return {
 			query: params.get("query") || undefined,
 			scope: (params.get("scope") as SearchScope) || undefined,
 			spaceId: params.get("spaceId") || undefined,
-			useSemantic: useSemanticParam !== null ? useSemanticParam === "true" : undefined,
 		}
 	}, [])
 

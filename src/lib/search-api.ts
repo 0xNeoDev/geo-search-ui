@@ -1,11 +1,10 @@
 import type { SearchParams, SearchResponse } from "@/types"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
-
 export async function searchEntities(
 	params: SearchParams,
+	apiUrl: string,
 ): Promise<SearchResponse> {
-	const { query, scope, spaceId, useSemantic } = params
+	const { query, scope, spaceId } = params
 
 	if (!query.trim()) {
 		return { results: [], total: 0, tookMs: 0 }
@@ -20,11 +19,7 @@ export async function searchEntities(
 		searchParams.append("space_id", spaceId)
 	}
 
-	if (useSemantic !== undefined) {
-		searchParams.append("use_semantic", useSemantic ? "true" : "false")
-	}
-
-	const url = `${API_URL}/search?${searchParams.toString()}`
+	const url = `${apiUrl}/search?${searchParams.toString()}`
 
 	try {
 		const response = await fetch(url)
