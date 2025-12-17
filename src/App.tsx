@@ -22,6 +22,13 @@ import { useUrlParams } from "@/hooks/useUrlParams";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { useDebounce } from "@/hooks/useDebounce";
 
+const scopeLabels: Record<SearchScope, string> = {
+	[SearchScope.Global]: "Global",
+	[SearchScope.GlobalBySpaceScore]: "Global by Space Score",
+	[SearchScope.Space]: "Within Space",
+	[SearchScope.SpaceSingle]: "Single Space Only",
+};
+
 function App() {
 	const { updateUrl, getUrlParams } = useUrlParams();
 	const { apiUrl, setApiUrl, defaultApiUrl } = useApiUrl();
@@ -88,6 +95,18 @@ function App() {
 		}
 	};
 
+	// Get display-friendly API host for the summary
+	const getApiHost = (url: string) => {
+		try {
+			const parsed = new URL(url);
+			return parsed.host;
+		} catch {
+			return url;
+		}
+	};
+
+	const optionsSummary = `${scopeLabels[scope]} · ${getApiHost(apiUrl)}`;
+
 	return (
 		<div className="h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col pt-12 px-4 pb-4 relative">
 			<div className="absolute top-4 right-4">
@@ -111,7 +130,14 @@ function App() {
 							>
 								<div className="flex items-center gap-2">
 									<Settings2 className="h-4 w-4" />
-									<span>Search Options</span>
+									<div className="flex flex-col items-start">
+										<span>Search Options</span>
+										{!optionsOpen && (
+											<span className="text-xs font-normal text-muted-foreground">
+												{optionsSummary}
+											</span>
+										)}
+									</div>
 								</div>
 								<ChevronDown
 									className={`h-4 w-4 transition-transform duration-200 ${
