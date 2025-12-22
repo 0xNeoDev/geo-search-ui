@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-import { SearchBar } from "@/components/SearchBar";
+import { ChevronDown, Settings2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ScopeSelector } from "@/components/ScopeSelector";
+import { SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
 	Card,
@@ -9,18 +10,17 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Settings2 } from "lucide-react";
-import { SearchScope } from "@/types";
-import { useUrlParams } from "@/hooks/useUrlParams";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
+import { SearchScope } from "@/types";
 
 const scopeLabels: Record<SearchScope, string> = {
 	[SearchScope.Global]: "Global",

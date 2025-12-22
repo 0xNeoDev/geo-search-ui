@@ -1,7 +1,7 @@
-import { SearchScope } from "@/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SearchScope } from "@/types";
 
 interface ScopeSelectorProps {
 	selectedScope: SearchScope;
@@ -49,9 +49,10 @@ export function ScopeSelector({
 				<Label className="text-sm font-semibold">Search Scope</Label>
 				<div className="grid grid-cols-1 gap-3">
 					{scopes.map((scope) => (
-						<div
+						<button
 							key={scope.value}
-							className="flex items-center space-x-3 p-3 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+							type="button"
+							className="flex items-center space-x-3 p-3 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer w-full text-left"
 							onClick={() => onScopeChange(scope.value)}
 						>
 							<Checkbox
@@ -71,7 +72,7 @@ export function ScopeSelector({
 									{scope.description}
 								</p>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 			</div>

@@ -1,0 +1,35 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.5/schema.json",
+	"files": {
+		"includes": ["**", "!dist", "!node_modules"]
+	},
+	"css": {
+		"parser": {
+			"cssModules": true,
+			"tailwindDirectives": true
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"formatter": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noUnknownAtRules": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["*.css"],
+			"formatter": {
+				"enabled": false
+			}
+		}
+	]
+}

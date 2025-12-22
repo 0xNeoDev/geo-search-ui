@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -49,4 +49,3 @@ export function useTheme() {
 
 	return { theme, setTheme };
 }
-

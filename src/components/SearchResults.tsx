@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
-import { SearchResult } from "@/types";
+import { Check, ChevronDown, ChevronUp, Copy, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import type { SearchResult } from "@/types";
 
 interface SearchResultsProps {
 	results: SearchResult[];
@@ -36,6 +36,7 @@ function CopyButton({
 
 	return (
 		<button
+			type="button"
 			onClick={(e) => {
 				e.stopPropagation();
 				handleCopy();
@@ -53,13 +54,7 @@ function CopyButton({
 	);
 }
 
-function ExpandableDescription({
-	description,
-	resultId,
-}: {
-	description: string;
-	resultId: string;
-}) {
+function ExpandableDescription({ description }: { description: string }) {
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [needsExpansion, setNeedsExpansion] = useState(false);
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
@@ -85,7 +80,7 @@ function ExpandableDescription({
 		return () => {
 			window.removeEventListener("resize", checkIfTruncated);
 		};
-	}, [description, isExpanded]);
+	}, [isExpanded]);
 
 	return (
 		<div className="mb-3">
@@ -99,6 +94,7 @@ function ExpandableDescription({
 			</p>
 			{needsExpansion && (
 				<button
+					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
 						setIsExpanded(!isExpanded);
@@ -171,10 +167,7 @@ export function SearchResults({
 								{result.name}
 							</div>
 							{result.description && (
-								<ExpandableDescription
-									description={result.description}
-									resultId={resultKey}
-								/>
+								<ExpandableDescription description={result.description} />
 							)}
 							<div className="flex flex-wrap items-start justify-between gap-3 text-xs text-muted-foreground text-left">
 								{("entityGlobalScore" in result ||

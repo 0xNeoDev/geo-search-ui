@@ -1,9 +1,9 @@
-import { StrictMode } from "react"
-import { createRoot } from "react-dom/client"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ApiUrlProvider } from "@/hooks/useApiUrl"
-import App from "./App.tsx"
-import "./index.css"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { ApiUrlProvider } from "@/hooks/useApiUrl";
+import App from "./App.tsx";
+import "./index.css";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -13,9 +13,13 @@ const queryClient = new QueryClient({
 			retry: false, // Don't retry failed searches
 		},
 	},
-})
+});
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+	throw new Error("Root element not found");
+}
+createRoot(rootElement).render(
 	<StrictMode>
 		<QueryClientProvider client={queryClient}>
 			<ApiUrlProvider>
@@ -23,5 +27,4 @@ createRoot(document.getElementById("root")!).render(
 			</ApiUrlProvider>
 		</QueryClientProvider>
 	</StrictMode>,
-)
-
+);

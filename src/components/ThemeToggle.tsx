@@ -1,11 +1,11 @@
+import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { useState } from "react";
-import { Sun, Moon, Monitor, Check } from "lucide-react";
-import { useTheme } from "@/hooks/useTheme";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useTheme } from "@/hooks/useTheme";
 
 const options = [
 	{ value: "light", icon: Sun, label: "Light" },

@@ -6,27 +6,26 @@ export enum SearchScope {
 }
 
 export interface SearchResult {
-	entityId: string
-	spaceId: string
-	name: string
-	description?: string
-	avatar?: string
-	cover?: string
-	entityGlobalScore?: number
-	spaceScore?: number
-	entitySpaceScore?: number
-	relevanceScore?: number
+	entityId: string;
+	spaceId: string;
+	name: string;
+	description?: string;
+	avatar?: string;
+	cover?: string;
+	entityGlobalScore?: number;
+	spaceScore?: number;
+	entitySpaceScore?: number;
+	relevanceScore?: number;
 }
 
 export interface SearchResponse {
-	results: SearchResult[]
-	total: number
-	tookMs: number
+	results: SearchResult[];
+	total: number;
+	tookMs: number;
 }
 
 export interface SearchParams {
-	query: string
-	scope: SearchScope
-	spaceId?: string
+	query: string;
+	scope: SearchScope;
+	spaceId?: string;
 }
-
