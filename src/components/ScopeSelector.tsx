@@ -1,6 +1,13 @@
+import { Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { TypeSelector } from "@/components/TypeSelector";
 import { SearchScope } from "@/types";
 
 interface ScopeSelectorProps {
@@ -8,6 +15,8 @@ interface ScopeSelectorProps {
 	onScopeChange: (scope: SearchScope) => void;
 	spaceId: string;
 	onSpaceIdChange: (spaceId: string) => void;
+	typeIds: string[];
+	onTypeIdsChange: (typeIds: string[]) => void;
 }
 
 export function ScopeSelector({
@@ -15,6 +24,8 @@ export function ScopeSelector({
 	onScopeChange,
 	spaceId,
 	onSpaceIdChange,
+	typeIds,
+	onTypeIdsChange,
 }: ScopeSelectorProps) {
 	const scopes = [
 		{
@@ -47,12 +58,12 @@ export function ScopeSelector({
 		<div className="space-y-6">
 			<div className="space-y-3">
 				<Label className="text-sm font-semibold">Search Scope</Label>
-				<div className="grid grid-cols-1 gap-3">
+				<div className="grid grid-cols-1 gap-2">
 					{scopes.map((scope) => (
 						<button
 							key={scope.value}
 							type="button"
-							className="flex items-center space-x-3 p-3 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer w-full text-left"
+							className="flex items-center space-x-3 px-3 py-2 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer w-full text-left"
 							onClick={() => onScopeChange(scope.value)}
 						>
 							<Checkbox
@@ -61,16 +72,32 @@ export function ScopeSelector({
 								onCheckedChange={() => onScopeChange(scope.value)}
 								className="pointer-events-none"
 							/>
-							<div className="flex-1">
+							<div className="flex-1 flex items-center justify-between">
 								<Label
 									htmlFor={scope.value}
 									className="text-sm font-medium cursor-pointer"
 								>
 									{scope.label}
 								</Label>
-								<p className="text-xs text-muted-foreground mt-0.5">
-									{scope.description}
-								</p>
+								<Popover>
+									<PopoverTrigger asChild>
+										<button
+											type="button"
+											onClick={(e) => e.stopPropagation()}
+											className="p-1 hover:bg-accent rounded transition-colors"
+											aria-label={`Info about ${scope.label}`}
+										>
+											<Info className="h-3.5 w-3.5 text-muted-foreground" />
+										</button>
+									</PopoverTrigger>
+									<PopoverContent
+										className="w-48 text-xs p-2"
+										side="left"
+										align="center"
+									>
+										{scope.description}
+									</PopoverContent>
+								</Popover>
 							</div>
 						</button>
 					))}
@@ -94,6 +121,13 @@ export function ScopeSelector({
 					/>
 				</div>
 			)}
+
+			<div className="pt-4 border-t">
+				<TypeSelector
+					selectedTypeIds={typeIds}
+					onTypeIdsChange={onTypeIdsChange}
+				/>
+			</div>
 		</div>
 	);
 }

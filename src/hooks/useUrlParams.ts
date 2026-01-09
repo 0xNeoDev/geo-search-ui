@@ -5,6 +5,7 @@ interface UrlParams {
 	query?: string;
 	scope?: SearchScope;
 	spaceId?: string;
+	typeIds?: string[];
 }
 
 export function useUrlParams() {
@@ -37,16 +38,29 @@ export function useUrlParams() {
 			}
 		}
 
+		if ("typeIds" in params) {
+			// Remove all existing typeId params first
+			url.searchParams.delete("typeId");
+			// Add each type ID as a separate param (allows multiple values)
+			if (params.typeIds && params.typeIds.length > 0) {
+				for (const typeId of params.typeIds) {
+					url.searchParams.append("typeId", typeId);
+				}
+			}
+		}
+
 		// Update URL without page reload
 		window.history.replaceState({}, "", url.toString());
 	}, []);
 
 	const getUrlParams = useCallback((): UrlParams => {
 		const params = new URLSearchParams(window.location.search);
+		const typeIds = params.getAll("typeId").filter(Boolean);
 		return {
 			query: params.get("query") || undefined,
 			scope: (params.get("scope") as SearchScope) || undefined,
 			spaceId: params.get("spaceId") || undefined,
+			typeIds: typeIds.length > 0 ? typeIds : undefined,
 		};
 	}, []);
 

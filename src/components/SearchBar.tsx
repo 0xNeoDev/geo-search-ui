@@ -15,9 +15,10 @@ import { SearchResults } from "./SearchResults";
 interface SearchBarProps {
 	scope: SearchScope;
 	spaceId?: string;
+	typeIds?: string[];
 }
 
-export function SearchBar({ scope, spaceId }: SearchBarProps) {
+export function SearchBar({ scope, spaceId, typeIds }: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams();
 
 	// Initialize query from URL params (only on mount)
@@ -55,11 +56,12 @@ export function SearchBar({ scope, spaceId }: SearchBarProps) {
 		data,
 		isLoading,
 		error: queryError,
-	} = useSearchEntities(debouncedQuery, scope, spaceId);
+	} = useSearchEntities(debouncedQuery, scope, spaceId, typeIds);
 
-	const results: SearchResult[] = data?.results ?? [];
-	const tookMs = data?.tookMs;
-	const total = data?.total;
+	// Don't show stale results while fetching new data
+	const results: SearchResult[] = isLoading ? [] : (data?.results ?? []);
+	const tookMs = isLoading ? undefined : data?.tookMs;
+	const total = isLoading ? undefined : data?.total;
 
 	// Convert query error to string for display
 	const error =
@@ -149,6 +151,7 @@ export function SearchBar({ scope, spaceId }: SearchBarProps) {
 
 			<div className="flex-1 min-h-0 mt-2">
 				<SearchResults
+					key={`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}`}
 					results={results}
 					isLoading={isLoading}
 					query={debouncedQuery}

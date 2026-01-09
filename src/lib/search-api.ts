@@ -22,7 +22,7 @@ export async function searchEntities(
 	params: SearchParams,
 	apiUrl: string,
 ): Promise<SearchResponse> {
-	const { query, scope, spaceId } = params;
+	const { query, scope, spaceId, typeIds } = params;
 
 	if (!query.trim()) {
 		return { results: [], total: 0, tookMs: 0 };
@@ -35,6 +35,12 @@ export async function searchEntities(
 
 	if (spaceId && (scope === "SPACE" || scope === "SPACE_SINGLE")) {
 		searchParams.append("space_id", spaceId);
+	}
+
+	if (typeIds && typeIds.length > 0) {
+		for (const typeId of typeIds) {
+			searchParams.append("type_ids", typeId);
+		}
 	}
 
 	const url = `${apiUrl}/search?${searchParams.toString()}`;

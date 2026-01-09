@@ -28,4 +28,10 @@ export interface SearchParams {
 	query: string;
 	scope: SearchScope;
 	spaceId?: string;
+	typeIds?: string[];
+}
+
+export interface EntityType {
+	id: string;
+	name: string;
 }

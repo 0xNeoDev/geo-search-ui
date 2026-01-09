@@ -42,6 +42,10 @@ function App() {
 		const params = getUrlParams();
 		return params.spaceId || "";
 	});
+	const [typeIds, setTypeIds] = useState<string[]>(() => {
+		const params = getUrlParams();
+		return params.typeIds || [];
+	});
 	const [optionsOpen, setOptionsOpen] = useState(false);
 	const [apiUrlInput, setApiUrlInput] = useState(defaultApiUrl);
 	const debouncedApiUrlInput = useDebounce(apiUrlInput, 500);
@@ -61,7 +65,7 @@ function App() {
 		}
 	}, [debouncedApiUrlInput, apiUrl, setApiUrl]);
 
-	// Update URL when scope or spaceId changes (but not on initial mount)
+	// Update URL when scope, spaceId, or typeIds changes (but not on initial mount)
 	useEffect(() => {
 		if (isInitialMount.current) {
 			isInitialMount.current = false;
@@ -73,9 +77,9 @@ function App() {
 			scope === SearchScope.Space || scope === SearchScope.SpaceSingle;
 		const spaceIdParam = needsSpaceId && spaceId ? spaceId : undefined;
 
-		// Only update scope and spaceId, preserve query
-		updateUrl({ scope, spaceId: spaceIdParam });
-	}, [scope, spaceId, updateUrl]);
+		// Update scope, spaceId, and typeIds, preserve query
+		updateUrl({ scope, spaceId: spaceIdParam, typeIds });
+	}, [scope, spaceId, typeIds, updateUrl]);
 
 	const handleApiUrlChange = (value: string) => {
 		setApiUrlInput(value);
@@ -154,6 +158,8 @@ function App() {
 										onScopeChange={setScope}
 										spaceId={spaceId}
 										onSpaceIdChange={setSpaceId}
+										typeIds={typeIds}
+										onTypeIdsChange={setTypeIds}
 									/>
 									<div className="pt-4 mt-4 border-t space-y-3">
 										<Label className="text-sm font-semibold">
@@ -197,6 +203,7 @@ function App() {
 											? spaceId
 											: undefined
 									}
+									typeIds={typeIds}
 								/>
 							</CardContent>
 						</Card>
@@ -217,6 +224,8 @@ function App() {
 									onScopeChange={setScope}
 									spaceId={spaceId}
 									onSpaceIdChange={setSpaceId}
+									typeIds={typeIds}
+									onTypeIdsChange={setTypeIds}
 								/>
 
 								<div className="pt-6 mt-6 border-t space-y-3">
