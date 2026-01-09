@@ -95,11 +95,22 @@ export function TypeSelector({
 			>
 				<PopoverTrigger asChild>
 					<div
+						role="combobox"
+						aria-expanded={isOpen}
+						aria-haspopup="listbox"
+						tabIndex={0}
 						className="flex flex-wrap gap-1.5 p-2 min-h-[42px] border rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-text"
 						onClick={(e) => {
 							e.preventDefault();
 							inputRef.current?.focus();
 							setIsOpen(true);
+						}}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								inputRef.current?.focus();
+								setIsOpen(true);
+							}
 						}}
 					>
 						{selectedTypes.map((type) => (

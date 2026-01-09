@@ -152,7 +152,7 @@ export function SearchResults({
 
 	return (
 		<div className="h-full overflow-y-auto overflow-x-hidden space-y-2 text-left pr-1 min-w-0">
-			{results.map((result) => {
+			{results.filter(Boolean).map((result) => {
 				const resultKey = `${result.entityId}-${result.spaceId}`;
 				return (
 					<Card

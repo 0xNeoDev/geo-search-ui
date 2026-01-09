@@ -1,4 +1,5 @@
 import { Info } from "lucide-react";
+import { TypeSelector } from "@/components/TypeSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,6 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { TypeSelector } from "@/components/TypeSelector";
 import { SearchScope } from "@/types";
 
 interface ScopeSelectorProps {
