@@ -1,19 +1,32 @@
 import type { SearchParams, SearchResponse } from "@/types";
 
 /**
- * Proxies HTTP requests through an HTTPS CORS proxy when needed.
- * This is necessary because browsers block mixed content (HTTP from HTTPS pages).
+ * Proxy services to handle mixed content issues.
+ * Browsers block HTTP requests from HTTPS pages (mixed content policy).
+ * These proxies provide an HTTPS endpoint that forwards requests to HTTP APIs.
  */
-function getProxiedUrl(url: string): string {
-	// If we're on HTTPS and the API URL is HTTP, use a CORS proxy
+const HTTPS_PROXIES = [
+	// corsproxy.io - generally reliable
+	(url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+	// cors.sh - another option
+	(url: string) => `https://proxy.cors.sh/${url}`,
+	// thingproxy - backup option
+	(url: string) => `https://thingproxy.freeboard.io/fetch/${url}`,
+];
+
+/**
+ * Proxies HTTP requests through an HTTPS proxy when needed.
+ * This is necessary because browsers block mixed content (HTTP requests from HTTPS pages).
+ */
+function getProxiedUrl(url: string, proxyIndex = 0): string {
+	// If we're on HTTPS and the API URL is HTTP, use a proxy to avoid mixed content blocking
 	if (
 		typeof window !== "undefined" &&
 		window.location.protocol === "https:" &&
 		url.startsWith("http://")
 	) {
-		// Use allorigins.win CORS proxy service
-		const proxyUrl = "https://api.allorigins.win/raw?url=";
-		return `${proxyUrl}${encodeURIComponent(url)}`;
+		const proxyFn = HTTPS_PROXIES[proxyIndex] || HTTPS_PROXIES[0];
+		return proxyFn(url);
 	}
 	return url;
 }
@@ -44,22 +57,41 @@ export async function searchEntities(
 	}
 
 	const url = `${apiUrl}/search?${searchParams.toString()}`;
-	const proxiedUrl = getProxiedUrl(url);
+	const needsProxy =
+		typeof window !== "undefined" &&
+		window.location.protocol === "https:" &&
+		url.startsWith("http://");
 
-	try {
-		const response = await fetch(proxiedUrl);
+	// Try proxies in order if we need to bypass mixed content blocking
+	const attempts = needsProxy ? HTTPS_PROXIES.length : 1;
+	let lastError: Error | null = null;
 
-		if (!response.ok) {
-			const error = await response.json().catch(() => ({
-				error: `HTTP ${response.status}: ${response.statusText}`,
-			}));
-			throw new Error(error.error || "Search failed");
+	for (let i = 0; i < attempts; i++) {
+		const proxiedUrl = getProxiedUrl(url, i);
+
+		try {
+			const response = await fetch(proxiedUrl, {
+				headers: needsProxy
+					? { "x-requested-with": "XMLHttpRequest" }
+					: {},
+			});
+
+			if (!response.ok) {
+				const error = await response.json().catch(() => ({
+					error: `HTTP ${response.status}: ${response.statusText}`,
+				}));
+				throw new Error(error.error || "Search failed");
+			}
+
+			const data: SearchResponse = await response.json();
+			return data;
+		} catch (error) {
+			console.warn(`Proxy attempt ${i + 1} failed:`, error);
+			lastError = error instanceof Error ? error : new Error(String(error));
+			// Continue to next proxy
 		}
-
-		const data: SearchResponse = await response.json();
-		return data;
-	} catch (error) {
-		console.error("Search API error:", error);
-		throw error;
 	}
+
+	console.error("All proxy attempts failed:", lastError);
+	throw lastError || new Error("Search failed after all proxy attempts");
 }
