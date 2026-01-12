@@ -28,8 +28,12 @@ export function TypeSelector({
 	const [isOpen, setIsOpen] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const selectedTypes = ENTITY_TYPES.filter((type) =>
+	// Separate selected IDs into known types and custom IDs
+	const selectedKnownTypes = ENTITY_TYPES.filter((type) =>
 		selectedTypeIds.includes(type.id),
+	);
+	const selectedCustomIds = selectedTypeIds.filter(
+		(id) => !ENTITY_TYPES.some((type) => type.id === id),
 	);
 
 	const filteredTypes = ENTITY_TYPES.filter(
@@ -37,6 +41,12 @@ export function TypeSelector({
 			!selectedTypeIds.includes(type.id) &&
 			type.name.toLowerCase().includes(inputValue.toLowerCase()),
 	);
+
+	// Check if input value is a valid custom ID (not empty, not already selected, and not matching a known type)
+	const isValidCustomId =
+		inputValue.trim() &&
+		!selectedTypeIds.includes(inputValue.trim()) &&
+		!ENTITY_TYPES.some((type) => type.id === inputValue.trim());
 
 	const handleSelect = (typeId: string) => {
 		onTypeIdsChange([...selectedTypeIds, typeId]);
@@ -53,15 +63,22 @@ export function TypeSelector({
 		if (
 			e.key === "Backspace" &&
 			inputValue === "" &&
-			selectedTypes.length > 0
+			selectedTypeIds.length > 0
 		) {
-			handleRemove(selectedTypes[selectedTypes.length - 1].id);
+			// Remove the last selected ID (whether it's a known type or custom)
+			handleRemove(selectedTypeIds[selectedTypeIds.length - 1]);
 		} else if (e.key === "Escape") {
 			setIsOpen(false);
 			inputRef.current?.blur();
-		} else if (e.key === "Enter" && filteredTypes.length > 0) {
+		} else if (e.key === "Enter") {
 			e.preventDefault();
-			handleSelect(filteredTypes[0].id);
+			if (filteredTypes.length > 0) {
+				// If there's a matching option, select it
+				handleSelect(filteredTypes[0].id);
+			} else if (isValidCustomId) {
+				// If no match but input is a valid custom ID, add it
+				handleSelect(inputValue.trim());
+			}
 		}
 	};
 
@@ -113,7 +130,8 @@ export function TypeSelector({
 							}
 						}}
 					>
-						{selectedTypes.map((type) => (
+						{/* Display known types */}
+						{selectedKnownTypes.map((type) => (
 							<span
 								key={type.id}
 								className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20"
@@ -132,6 +150,26 @@ export function TypeSelector({
 								</button>
 							</span>
 						))}
+						{/* Display custom IDs */}
+						{selectedCustomIds.map((id) => (
+							<span
+								key={id}
+								className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full bg-secondary text-secondary-foreground border border-border"
+							>
+								<span className="font-mono">{id.slice(0, 8)}...</span>
+								<button
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation();
+										handleRemove(id);
+									}}
+									className="hover:bg-secondary/80 rounded-full p-0.5 transition-colors"
+									aria-label={`Remove custom ID`}
+								>
+									<X className="h-3 w-3" />
+								</button>
+							</span>
+						))}
 						<input
 							ref={inputRef}
 							type="text"
@@ -140,7 +178,9 @@ export function TypeSelector({
 							onFocus={handleInputFocus}
 							onKeyDown={handleKeyDown}
 							placeholder={
-								selectedTypes.length === 0 ? "Filter by type..." : ""
+								selectedTypeIds.length === 0
+									? "Filter by type or enter custom ID..."
+									: ""
 							}
 							className="flex-1 min-w-[80px] h-7 bg-transparent border-0 p-0 text-sm outline-none placeholder:text-muted-foreground"
 						/>
@@ -168,9 +208,28 @@ export function TypeSelector({
 									</span>
 								</button>
 							))
+						) : isValidCustomId ? (
+							<button
+								type="button"
+								onClick={() => handleSelect(inputValue.trim())}
+								className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors flex items-center justify-between group border-t border-border"
+							>
+								<span className="text-muted-foreground">
+									Add custom ID:{" "}
+									<span className="font-mono text-foreground">
+										{inputValue.trim().slice(0, 20)}
+										{inputValue.trim().length > 20 ? "..." : ""}
+									</span>
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Press Enter
+								</span>
+							</button>
 						) : (
 							<div className="px-3 py-2 text-sm text-muted-foreground">
-								{inputValue ? "No matching types" : "All types selected"}
+								{inputValue
+									? "No matching types. Enter a custom ID and press Enter."
+									: "All types selected"}
 							</div>
 						)}
 					</div>
