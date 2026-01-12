@@ -11,7 +11,7 @@ const STORAGE_KEY = "gaia_search_api_url";
 const DEFAULT_API_URL =
 	import.meta.env.VITE_API_URL ||
 	(import.meta.env.PROD
-		? "https://api.geobrowser.io"
+		? "https://testnet-api.geobrowser.io"
 		: "http://localhost:3000");
 
 interface ApiUrlContextType {
