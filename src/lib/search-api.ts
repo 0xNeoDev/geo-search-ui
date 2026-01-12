@@ -25,7 +25,9 @@ export async function searchEntities(
 		}
 	}
 
-	const url = `${apiUrl}/search?${searchParams.toString()}`;
+	// Ensure apiUrl doesn't have trailing slashes
+	const cleanApiUrl = apiUrl.trim().replace(/\/+$/, "");
+	const url = `${cleanApiUrl}/search?${searchParams.toString()}`;
 
 	const response = await fetch(url);
 

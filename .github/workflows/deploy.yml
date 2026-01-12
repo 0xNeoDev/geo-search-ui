@@ -37,7 +37,7 @@ jobs:
           # Set base path for GitHub Pages (empty for user/org pages, /repo-name for project pages)
           VITE_BASE_PATH: ${{ github.event.repository.name }}
           # Set API URL for production deployment
-          VITE_API_URL: http://45.55.102.164
+          VITE_API_URL: https://api.geobrowser.io
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

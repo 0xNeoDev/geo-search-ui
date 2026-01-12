@@ -115,36 +115,40 @@ export function SearchBar({ scope, spaceId, typeIds }: SearchBarProps) {
 				</div>
 			)}
 
-			{!isLoading && tookMs !== undefined && results.length > 0 && (
+			{!isLoading && tookMs !== undefined && (
 				<div className="mt-2 text-xs text-muted-foreground/60 flex-shrink-0 flex items-center gap-1">
-					<span>
-						{total !== undefined
-							? total.toLocaleString()
-							: results.length.toLocaleString()}{" "}
-						total
-					</span>
-					{total !== undefined && total >= 10000 && (
-						<Popover>
-							<PopoverTrigger asChild>
-								<button
-									type="button"
-									className="inline-flex items-center hover:text-muted-foreground transition-colors"
-									aria-label="More info about results"
-								>
-									<Info className="h-3 w-3" />
-								</button>
-							</PopoverTrigger>
-							<PopoverContent
-								className="w-56 text-xs p-2"
-								side="right"
-								align="center"
-							>
-								There may be more documents that match, but the maximum returned
-								total is 10,000.
-							</PopoverContent>
-						</Popover>
+					{results.length > 0 && (
+						<>
+							<span>
+								{total !== undefined
+									? total.toLocaleString()
+									: results.length.toLocaleString()}{" "}
+								total
+							</span>
+							{total !== undefined && total >= 10000 && (
+								<Popover>
+									<PopoverTrigger asChild>
+										<button
+											type="button"
+											className="inline-flex items-center hover:text-muted-foreground transition-colors"
+											aria-label="More info about results"
+										>
+											<Info className="h-3 w-3" />
+										</button>
+									</PopoverTrigger>
+									<PopoverContent
+										className="w-56 text-xs p-2"
+										side="right"
+										align="center"
+									>
+										There may be more documents that match, but the maximum
+										returned total is 10,000.
+									</PopoverContent>
+								</Popover>
+							)}
+							<span className="text-muted-foreground/40">·</span>
+						</>
 					)}
-					<span className="text-muted-foreground/40">·</span>
 					<span>{tookMs}ms</span>
 				</div>
 			)}

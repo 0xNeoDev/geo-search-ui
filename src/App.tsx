@@ -1,4 +1,4 @@
-import { ChevronDown, Settings2 } from "lucide-react";
+import { ChevronDown, Info, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ScopeSelector } from "@/components/ScopeSelector";
 import { SearchBar } from "@/components/SearchBar";
@@ -17,6 +17,11 @@ import {
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useUrlParams } from "@/hooks/useUrlParams";
@@ -60,8 +65,10 @@ function App() {
 
 	// Update API URL whenever debounced input changes
 	useEffect(() => {
-		if (debouncedApiUrlInput.trim() && debouncedApiUrlInput !== apiUrl) {
-			setApiUrl(debouncedApiUrlInput.trim());
+		// Trim whitespace and remove trailing slashes
+		const trimmedInput = debouncedApiUrlInput.trim().replace(/\/+$/, "");
+		if (trimmedInput && trimmedInput !== apiUrl) {
+			setApiUrl(trimmedInput);
 		}
 	}, [debouncedApiUrlInput, apiUrl, setApiUrl]);
 
@@ -166,12 +173,33 @@ function App() {
 											API Configuration
 										</Label>
 										<div className="space-y-2">
-											<Label
-												htmlFor="api-url-mobile"
-												className="text-xs text-muted-foreground"
-											>
-												API URL
-											</Label>
+											<div className="flex items-center gap-1.5">
+												<Label
+													htmlFor="api-url-mobile"
+													className="text-xs text-muted-foreground"
+												>
+													API URL
+												</Label>
+												<Popover>
+													<PopoverTrigger asChild>
+														<button
+															type="button"
+															className="inline-flex items-center hover:text-muted-foreground transition-colors"
+															aria-label="API URL information"
+														>
+															<Info className="h-3 w-3 text-muted-foreground" />
+														</button>
+													</PopoverTrigger>
+													<PopoverContent
+														className="w-56 text-xs p-2"
+														side="right"
+														align="start"
+													>
+														Enter the API base URL (e.g.,
+														https://api.geobrowser.io)
+													</PopoverContent>
+												</Popover>
+											</div>
 											<Input
 												id="api-url-mobile"
 												type="text"
@@ -233,12 +261,33 @@ function App() {
 										API Configuration
 									</Label>
 									<div className="space-y-2">
-										<Label
-											htmlFor="api-url"
-											className="text-xs text-muted-foreground"
-										>
-											API URL
-										</Label>
+										<div className="flex items-center gap-1.5">
+											<Label
+												htmlFor="api-url"
+												className="text-xs text-muted-foreground"
+											>
+												API URL
+											</Label>
+											<Popover>
+												<PopoverTrigger asChild>
+													<button
+														type="button"
+														className="inline-flex items-center hover:text-muted-foreground transition-colors"
+														aria-label="API URL information"
+													>
+														<Info className="h-3 w-3 text-muted-foreground" />
+													</button>
+												</PopoverTrigger>
+												<PopoverContent
+													className="w-56 text-xs p-2"
+													side="right"
+													align="start"
+												>
+													Enter the API base URL (e.g.,
+													https://api.geobrowser.io)
+												</PopoverContent>
+											</Popover>
+										</div>
 										<Input
 											id="api-url"
 											type="text"
