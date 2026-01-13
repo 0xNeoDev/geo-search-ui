@@ -15,7 +15,7 @@ function injectOgUrls(): Plugin {
 					? `https://${process.env.GITHUB_REPOSITORY_OWNER || "yourusername"}.github.io/${basePath}`
 					: "https://yourusername.github.io");
 
-			const ogImageUrl = `${siteUrl}/og-image.svg`;
+			const ogImageUrl = `${siteUrl}/og-image.png`;
 
 			return html
 				.replace(/%OG_IMAGE_URL%/g, ogImageUrl)
