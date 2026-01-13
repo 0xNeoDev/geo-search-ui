@@ -1,4 +1,4 @@
-import { ChevronDown, Info, Settings2 } from "lucide-react";
+import { ChevronDown, Github, Info, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ScopeSelector } from "@/components/ScopeSelector";
 import { SearchBar } from "@/components/SearchBar";
@@ -120,7 +120,17 @@ function App() {
 
 	return (
 		<div className="h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col pt-12 px-4 pb-4 relative">
-			<div className="absolute top-4 right-4">
+			<div className="absolute top-4 right-4 flex items-center gap-2">
+				<a
+					href="https://github.com/0xneodev/geo-search-ui"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="p-2 rounded-lg bg-muted/50 border border-border hover:bg-accent/50 transition-colors"
+					title="View on GitHub"
+					aria-label="View source code on GitHub"
+				>
+					<Github className="h-4 w-4" />
+				</a>
 				<ThemeToggle />
 			</div>
 			<div className="w-full max-w-5xl mx-auto flex flex-col flex-1 min-h-0">
