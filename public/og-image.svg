@@ -1,0 +1,90 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Geo's purple gradient background (matching curator program) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Purple accent gradient (for icons and accents) -->
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Text gradient (white to light purple) -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0e7ff;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Subtle glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Subtle grid pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    </pattern>
+    
+    <!-- Radial gradient for decorative circles -->
+    <radialGradient id="circleGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.15);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Background with gradient -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  
+  <!-- Decorative floating circles (inspired by curator program) -->
+  <circle cx="180" cy="140" r="130" fill="url(#circleGradient)" opacity="0.8"/>
+  <circle cx="1020" cy="490" r="110" fill="url(#circleGradient)" opacity="0.6"/>
+  <circle cx="1120" cy="190" r="90" fill="url(#circleGradient)" opacity="0.5"/>
+  <circle cx="150" cy="500" r="70" fill="url(#circleGradient)" opacity="0.4"/>
+  
+  <!-- Main title with gradient text -->
+  <text x="600" y="280" font-family="Inter, system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif" font-size="128" font-weight="700" letter-spacing="-2" text-anchor="middle" fill="url(#textGradient)" filter="url(#glow)">
+    Geo Search
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="360" font-family="Inter, system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif" font-size="36" font-weight="400" letter-spacing="0.3" text-anchor="middle" fill="rgba(255,255,255,0.95)">
+    exploring knowledge that we can trust
+  </text>
+  
+  <!-- Modern search/globe icon with purple accent -->
+  <g transform="translate(600, 470)">
+    <!-- Outer glow ring -->
+    <circle cx="0" cy="0" r="58" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+    
+    <!-- Globe representation -->
+    <circle cx="0" cy="0" r="52" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/>
+    <circle cx="0" cy="0" r="42" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+    
+    <!-- Latitude lines -->
+    <ellipse cx="0" cy="-20" rx="42" ry="12" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+    <ellipse cx="0" cy="20" rx="42" ry="12" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+    
+    <!-- Longitude lines -->
+    <path d="M 0,-42 Q 15,0 0,42" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+    <path d="M 0,-42 Q -15,0 0,42" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+    
+    <!-- Purple gradient search magnifying glass (inspired by curator program icons) -->
+    <circle cx="28" cy="-28" r="10" fill="url(#purpleGradient)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <line x1="36" y1="-20" x2="48" y2="-8" stroke="rgba(255,255,255,0.95)" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Highlight on search glass -->
+    <circle cx="25" cy="-31" r="3" fill="rgba(255,255,255,0.6)"/>
+  </g>
+  
+  <!-- Purple accent line at bottom (inspired by curator program button gradient) -->
+  <rect x="0" y="600" width="1200" height="30" fill="url(#purpleGradient)" opacity="0.15"/>
+</svg>
