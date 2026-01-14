@@ -10,7 +10,36 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchEntities } from "@/hooks/useSearchEntities";
 import { useUrlParams } from "@/hooks/useUrlParams";
 import type { SearchResult, SearchScope } from "@/types";
+import { ENTITY_TYPES } from "@/types";
 import { SearchResults } from "./SearchResults";
+
+// Helper function to format type display
+export function formatTypeFilters(typeIds: string[]): string {
+	if (typeIds.length === 0) return "";
+
+	// Separate known types and custom IDs
+	const knownTypes = ENTITY_TYPES.filter((type) => typeIds.includes(type.id));
+	const customIds = typeIds.filter(
+		(id) => !ENTITY_TYPES.some((type) => type.id === id),
+	);
+
+	// If we have 1-2 known types and no custom IDs, show their names
+	if (knownTypes.length <= 2 && customIds.length === 0) {
+		return knownTypes.map((type) => type.name).join(", ");
+	}
+
+	// If we have 1-2 total (known + custom), try to show them
+	if (typeIds.length <= 2) {
+		const parts = [
+			...knownTypes.map((type) => type.name),
+			...customIds.map((id) => `${id.slice(0, 8)}...`),
+		];
+		return parts.join(", ");
+	}
+
+	// Otherwise, show count
+	return `${typeIds.length} type filter${typeIds.length === 1 ? "" : "s"}`;
+}
 
 interface SearchBarProps {
 	scope: SearchScope;

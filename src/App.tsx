@@ -1,7 +1,7 @@
 import { ChevronDown, Github, Info, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ScopeSelector } from "@/components/ScopeSelector";
-import { SearchBar } from "@/components/SearchBar";
+import { SearchBar, formatTypeFilters } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
 	Card,
@@ -117,6 +117,8 @@ function App() {
 	};
 
 	const optionsSummary = `${scopeLabels[scope]} · ${getApiHost(apiUrl)}`;
+	const typeFiltersDisplay =
+		typeIds.length > 0 ? formatTypeFilters(typeIds) : null;
 
 	return (
 		<div className="h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col pt-12 px-4 pb-4 relative">
@@ -156,6 +158,7 @@ function App() {
 										{!optionsOpen && (
 											<span className="text-xs font-normal text-muted-foreground">
 												{optionsSummary}
+												{typeFiltersDisplay && <> · {typeFiltersDisplay}</>}
 											</span>
 										)}
 									</div>
@@ -254,6 +257,11 @@ function App() {
 								<CardTitle>Options</CardTitle>
 								<CardDescription>
 									Configure search scope and filters
+									{typeFiltersDisplay && (
+										<span className="block mt-1">
+											Type filters: {typeFiltersDisplay}
+										</span>
+									)}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
