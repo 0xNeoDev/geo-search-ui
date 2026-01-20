@@ -6,10 +6,6 @@ export async function searchEntities(
 ): Promise<SearchResponse> {
 	const { query, scope, spaceId, typeIds } = params;
 
-	if (!query.trim()) {
-		return { results: [], total: 0, tookMs: 0 };
-	}
-
 	const searchParams = new URLSearchParams({
 		query: query.trim(),
 		scope: scope,

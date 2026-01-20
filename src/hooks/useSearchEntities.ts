@@ -35,9 +35,7 @@ export function useSearchEntities(
 	const result = useQuery<SearchResponse>({
 		queryKey,
 		queryFn: () => searchEntities(params, apiUrl),
-		enabled:
-			query.trim().length > 0 &&
-			(!needsSpaceId || (needsSpaceId && hasValidSpaceId)),
+		enabled: !needsSpaceId || (needsSpaceId && hasValidSpaceId),
 		// TanStack Query automatically handles request cancellation
 		// when the query key changes or component unmounts
 	});

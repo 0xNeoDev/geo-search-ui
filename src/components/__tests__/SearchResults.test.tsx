@@ -11,12 +11,11 @@ describe("SearchResults", () => {
 		expect(screen.queryByText("No results found")).not.toBeInTheDocument();
 	});
 
-	it("should return null when query is empty", () => {
-		const { container } = render(
-			<SearchResults results={[]} isLoading={false} query="" />,
-		);
+	it("should show 'No results found' when query is empty and no results", () => {
+		render(<SearchResults results={[]} isLoading={false} query="" />);
 
-		expect(container.firstChild).toBeNull();
+		expect(screen.getByText(/No results found for/)).toBeInTheDocument();
+		expect(screen.getByText('""')).toBeInTheDocument();
 	});
 
 	it("should show 'No results found' when query exists but results are empty", () => {

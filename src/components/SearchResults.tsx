@@ -136,10 +136,6 @@ export function SearchResults({
 		);
 	}
 
-	if (!query.trim()) {
-		return null;
-	}
-
 	if (!results || results.length === 0) {
 		return (
 			<div className="mt-4 p-6 text-center border border-dashed rounded-lg bg-muted/50">
@@ -179,7 +175,7 @@ export function SearchResults({
 										</span>
 										<div className="flex flex-wrap items-center gap-2">
 											{"entityGlobalScore" in result && (
-												<span className="bg-primary/10 text-primary px-2 py-1 rounded">
+												<span className="bg-muted px-2 py-1 rounded">
 													Global:{" "}
 													{result.entityGlobalScore !== null &&
 													result.entityGlobalScore !== undefined
@@ -208,7 +204,7 @@ export function SearchResults({
 										</div>
 									</div>
 								)}
-								<div className="flex flex-wrap items-start gap-3">
+								<div className="flex flex-wrap items-start gap-3 ml-auto">
 									{result.entityId && (
 										<div className="flex flex-col">
 											<span className="text-[10px] text-muted-foreground/70 mb-0.5">
