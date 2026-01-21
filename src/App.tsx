@@ -1,7 +1,7 @@
 import { ChevronDown, Github, Info, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ScopeSelector } from "@/components/ScopeSelector";
-import { SearchBar, formatTypeFilters } from "@/components/SearchBar";
+import { formatTypeFilters, SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
 	Card,
