@@ -6,6 +6,7 @@ interface UrlParams {
 	scope?: SearchScope;
 	spaceId?: string;
 	typeIds?: string[];
+	apiUrl?: string;
 }
 
 export function useUrlParams() {
@@ -49,6 +50,14 @@ export function useUrlParams() {
 			}
 		}
 
+		if ("apiUrl" in params) {
+			if (params.apiUrl?.trim()) {
+				url.searchParams.set("apiUrl", params.apiUrl.trim());
+			} else {
+				url.searchParams.delete("apiUrl");
+			}
+		}
+
 		// Update URL without page reload
 		window.history.replaceState({}, "", url.toString());
 	}, []);
@@ -61,6 +70,7 @@ export function useUrlParams() {
 			scope: (params.get("scope") as SearchScope) || undefined,
 			spaceId: params.get("spaceId") || undefined,
 			typeIds: typeIds.length > 0 ? typeIds : undefined,
+			apiUrl: params.get("apiUrl") || undefined,
 		};
 	}, []);
 
