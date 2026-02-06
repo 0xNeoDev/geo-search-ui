@@ -1,18 +1,18 @@
-import {
-	createContext,
-	type ReactNode,
-	useContext,
-	useEffect,
-	useState,
-} from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 
-const STORAGE_KEY = "gaia_search_api_url";
-// Use VITE_API_URL if set, otherwise use production URL for prod builds, localhost for dev
-const DEFAULT_API_URL =
-	import.meta.env.VITE_API_URL ||
-	(import.meta.env.PROD
-		? "https://testnet-api.geobrowser.io"
-		: "http://localhost:3000");
+export const DEFAULT_API_URL =
+	import.meta.env.VITE_API_URL || "https://testnet-api.geobrowser.io";
+
+function getInitialApiUrl(): string {
+	if (typeof window !== "undefined") {
+		const params = new URLSearchParams(window.location.search);
+		const urlParam = params.get("apiUrl");
+		if (urlParam) {
+			return urlParam.trim().replace(/\/+$/, "");
+		}
+	}
+	return DEFAULT_API_URL;
+}
 
 interface ApiUrlContextType {
 	apiUrl: string;
@@ -24,21 +24,7 @@ interface ApiUrlContextType {
 const ApiUrlContext = createContext<ApiUrlContextType | undefined>(undefined);
 
 export function ApiUrlProvider({ children }: { children: ReactNode }) {
-	const [apiUrl, setApiUrlState] = useState<string>(() => {
-		// Always start with default on mount (page refresh)
-		// Clear any stored value to ensure fresh start
-		if (typeof window !== "undefined") {
-			localStorage.removeItem(STORAGE_KEY);
-		}
-		return DEFAULT_API_URL;
-	});
-
-	// Persist to localStorage whenever apiUrl changes (but only during session, not on refresh)
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			localStorage.setItem(STORAGE_KEY, apiUrl);
-		}
-	}, [apiUrl]);
+	const [apiUrl, setApiUrlState] = useState<string>(getInitialApiUrl);
 
 	const setApiUrl = (url: string) => {
 		// Trim whitespace and remove trailing slashes
