@@ -11,7 +11,7 @@ interface SearchResultsProps {
 
 function shortenId(id: string | undefined): string {
 	if (!id) return "";
-	return id.substring(0, 5);
+	return id.substring(0, 4);
 }
 
 function CopyButton({
@@ -168,7 +168,9 @@ export function SearchResults({
 							<div className="flex flex-wrap items-start justify-between gap-3 text-xs text-muted-foreground text-left">
 								{("entityGlobalScore" in result ||
 									"entitySpaceScore" in result ||
-									"spaceScore" in result) && (
+									"spaceScore" in result ||
+									"relevanceScore" in result ||
+									"textMatchScore" in result) && (
 									<div className="flex flex-col gap-1">
 										<span className="text-[10px] text-muted-foreground/70 mb-0.5">
 											Scores
@@ -179,7 +181,7 @@ export function SearchResults({
 													Global:{" "}
 													{result.entityGlobalScore !== null &&
 													result.entityGlobalScore !== undefined
-														? result.entityGlobalScore.toFixed(2)
+														? result.entityGlobalScore.toFixed(2).replace(/\.?0+$/, "")
 														: "null"}
 												</span>
 											)}
@@ -188,7 +190,7 @@ export function SearchResults({
 													Space:{" "}
 													{result.spaceScore !== null &&
 													result.spaceScore !== undefined
-														? result.spaceScore.toFixed(2)
+														? result.spaceScore.toFixed(2).replace(/\.?0+$/, "")
 														: "null"}
 												</span>
 											)}
@@ -197,7 +199,25 @@ export function SearchResults({
 													Entity:{" "}
 													{result.entitySpaceScore !== null &&
 													result.entitySpaceScore !== undefined
-														? result.entitySpaceScore.toFixed(2)
+														? result.entitySpaceScore.toFixed(2).replace(/\.?0+$/, "")
+														: "null"}
+												</span>
+											)}
+											{"relevanceScore" in result && (
+												<span className="bg-muted px-2 py-1 rounded">
+													Relevance:{" "}
+													{result.relevanceScore !== null &&
+													result.relevanceScore !== undefined
+														? result.relevanceScore.toFixed(2).replace(/\.?0+$/, "")
+														: "null"}
+												</span>
+											)}
+											{"textMatchScore" in result && (
+												<span className="bg-muted px-2 py-1 rounded">
+													Text:{" "}
+													{result.textMatchScore !== null &&
+													result.textMatchScore !== undefined
+														? result.textMatchScore.toFixed(2).replace(/\.?0+$/, "")
 														: "null"}
 												</span>
 											)}

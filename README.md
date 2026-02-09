@@ -7,12 +7,13 @@ A React-based front-end demo application for the Geo Knowledge Graph search API.
 - **Real-time search**: Search results appear as you type
 - **Multiple search scopes**: Toggle between GLOBAL, GLOBAL_BY_SPACE_SCORE, SPACE, and SPACE_SINGLE
 - **Space filtering**: Optional space ID input for space-scoped searches
+- **API environment toggle**: Quickly switch between Production, Staging, or a custom API URL
+- **Shareable URLs**: All options (scope, filters, API URL) are synced to URL query params for easy sharing
 - **Clean UI**: Built with shadcn/ui components and Tailwind CSS
 
 ## Prerequisites
 
 - [Bun](https://bun.sh/) installed
-- Search API running (default: `http://localhost:3000`)
 
 ## Quick Start
 
@@ -23,18 +24,12 @@ A React-based front-end demo application for the Geo Knowledge Graph search API.
    bun install
    ```
 
-2. **Set environment variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env and set VITE_API_URL if your API is not at http://localhost:3000
-   ```
-
-3. **Start development server:**
+2. **Start development server:**
    ```bash
    bun run dev
    ```
 
-4. **Open in browser:**
+3. **Open in browser:**
    Navigate to `http://localhost:5173`
 
 ### Using Docker
@@ -49,9 +44,13 @@ A React-based front-end demo application for the Geo Knowledge Graph search API.
 
 ## Configuration
 
-Set the following environment variable:
+The API URL defaults to `https://testnet-api.geobrowser.io` (Production). You can switch between Production, Staging (`https://testnet-api-staging.geobrowser.io`), or a custom URL using the in-app API Configuration selector.
 
-- `VITE_API_URL`: URL of the search API (default: `http://localhost:3000`)
+The selected API URL is reflected in the `?apiUrl=` query parameter, so you can share URLs with a specific API target. The parameter is omitted when using the default Production URL.
+
+### Environment Variable
+
+- `VITE_API_URL`: Override the default API URL at build time
 
 ## Project Structure
 
@@ -143,5 +142,5 @@ The Docker container serves the built static files using `bun run preview` and e
 
 ### Environment Variables
 
-For production deployments, ensure `VITE_API_URL` is set to your production API endpoint before building.
+For production deployments, `VITE_API_URL` can optionally be set to override the default API endpoint before building.
 

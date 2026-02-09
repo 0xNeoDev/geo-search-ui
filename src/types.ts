@@ -16,6 +16,7 @@ export interface SearchResult {
 	spaceScore?: number;
 	entitySpaceScore?: number;
 	relevanceScore?: number;
+	textMatchScore?: number;
 }
 
 export interface SearchResponse {
