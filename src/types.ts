@@ -1,6 +1,7 @@
 export enum SearchScope {
 	Global = "GLOBAL",
 	GlobalBySpaceScore = "GLOBAL_BY_SPACE_SCORE",
+	GlobalByEntitySpaceScore = "GLOBAL_BY_ENTITY_SPACE_SCORE",
 	Space = "SPACE",
 	SpaceSingle = "SPACE_SINGLE",
 }

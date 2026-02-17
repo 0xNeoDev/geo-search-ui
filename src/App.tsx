@@ -23,6 +23,7 @@ import { SearchScope } from "@/types";
 const scopeLabels: Record<SearchScope, string> = {
 	[SearchScope.Global]: "Global",
 	[SearchScope.GlobalBySpaceScore]: "Global by Space Score",
+	[SearchScope.GlobalByEntitySpaceScore]: "Global by Entity Space Score",
 	[SearchScope.Space]: "Within Space",
 	[SearchScope.SpaceSingle]: "Single Space Only",
 };

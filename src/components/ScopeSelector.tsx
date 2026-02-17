@@ -39,6 +39,11 @@ export function ScopeSelector({
 			description: "Global search ranked by space relevance",
 		},
 		{
+			value: SearchScope.GlobalByEntitySpaceScore,
+			label: "Global by Entity Space Score",
+			description: "Global search weighted by entity space and space scores",
+		},
+		{
 			value: SearchScope.Space,
 			label: "Within Space",
 			description: "Aggregated search across a space's subspaces",
