@@ -86,7 +86,7 @@ function ExpandableDescription({ description }: { description: string }) {
 	}, [isExpanded]);
 
 	return (
-		<div className="mb-2 -mt-3">
+		<div className="mb-2 -mt-1 pr-8">
 			<p
 				ref={descriptionRef}
 				className={`text-sm text-muted-foreground text-left ${
@@ -159,7 +159,7 @@ export function SearchResults({
 						className="cursor-pointer hover:bg-accent/50 transition-colors border-border text-left w-full overflow-hidden"
 					>
 						<CardContent className="p-4 text-left overflow-hidden">
-							<div className="flex items-start gap-3">
+							<div className="flex items-start gap-3 mb-1">
 								{result.avatar && (
 									<img
 										src={result.avatar}
@@ -188,13 +188,13 @@ export function SearchResults({
 										</div>
 									)}
 								</div>
-								<div className="flex items-start gap-3 shrink-0 text-xs text-muted-foreground font-mono">
+								<div className="flex items-start gap-3 shrink-0 text-xs text-muted-foreground font-mono -mt-1">
 									{result.entityId && (
 										<div className="flex flex-col">
-											<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans">
+											<span className="text-[10px] text-muted-foreground/70 font-sans">
 												Entity ID
 											</span>
-											<div className="flex items-center px-2 py-1">
+											<div className="flex items-center py-0.5">
 												{shortenId(result.entityId)}
 												<CopyButton text={result.entityId} label="entity ID" />
 											</div>
@@ -202,10 +202,10 @@ export function SearchResults({
 									)}
 									{result.space?.id && (
 										<div className="flex flex-col">
-											<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans">
+											<span className="text-[10px] text-muted-foreground/70 font-sans">
 												Space ID
 											</span>
-											<div className="flex items-center px-2 py-1">
+											<div className="flex items-center py-0.5">
 												{shortenId(result.space.id)}
 												<CopyButton text={result.space.id} label="space ID" />
 											</div>
