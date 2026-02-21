@@ -86,7 +86,7 @@ function ExpandableDescription({ description }: { description: string }) {
 	}, [isExpanded]);
 
 	return (
-		<div className="mb-2 -mt-1 pr-8">
+		<div className="mb-2 -mt-1 pr-[120px]">
 			<p
 				ref={descriptionRef}
 				className={`text-sm text-muted-foreground text-left ${
