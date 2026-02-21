@@ -1,4 +1,10 @@
-import { Check, ChevronDown, ChevronUp, Copy, Loader2 } from "lucide-react";
+import {
+	Check,
+	ChevronDown,
+	ChevronUp,
+	Copy,
+	Loader2,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SearchResult } from "@/types";
@@ -59,7 +65,6 @@ function ExpandableDescription({ description }: { description: string }) {
 	const [needsExpansion, setNeedsExpansion] = useState(false);
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
 
-	// Check if description needs expansion by measuring if it's truncated
 	useEffect(() => {
 		const checkIfTruncated = () => {
 			if (descriptionRef.current && !isExpanded) {
@@ -68,12 +73,10 @@ function ExpandableDescription({ description }: { description: string }) {
 					descriptionRef.current.clientHeight;
 				setNeedsExpansion(isTruncated);
 			} else if (isExpanded) {
-				// When expanded, we know it needed expansion
 				setNeedsExpansion(true);
 			}
 		};
 
-		// Check after render and on window resize
 		checkIfTruncated();
 		window.addEventListener("resize", checkIfTruncated);
 
@@ -83,7 +86,7 @@ function ExpandableDescription({ description }: { description: string }) {
 	}, [isExpanded]);
 
 	return (
-		<div className="mb-3">
+		<div className="mb-2 -mt-3">
 			<p
 				ref={descriptionRef}
 				className={`text-sm text-muted-foreground text-left ${
@@ -149,63 +152,131 @@ export function SearchResults({
 	return (
 		<div className="h-full overflow-y-auto overflow-x-hidden space-y-2 text-left pr-1 min-w-0 custom-scrollbar">
 			{results.filter(Boolean).map((result) => {
-				const resultKey = `${result.entityId}-${result.spaceId}`;
+				const resultKey = `${result.entityId}-${result.space?.id}`;
 				return (
 					<Card
 						key={resultKey}
 						className="cursor-pointer hover:bg-accent/50 transition-colors border-border text-left w-full overflow-hidden"
 					>
 						<CardContent className="p-4 text-left overflow-hidden">
-							<div
-								className="font-semibold text-base mb-1 text-left truncate"
-								title={result.name}
-							>
-								{result.name}
+							<div className="flex items-start gap-3">
+								{result.avatar && (
+									<img
+										src={result.avatar}
+										alt=""
+										className="h-9 w-9 rounded-md object-cover shrink-0 mt-0.5"
+									/>
+								)}
+								<div className="min-w-0 flex-1">
+									<div
+										className="font-semibold text-base text-left truncate"
+										title={result.name}
+									>
+										{result.name}
+									</div>
+									{result.types && result.types.length > 0 && (
+										<div className="flex flex-wrap gap-1 mt-0.5">
+											{result.types.map((type) => (
+												<span
+													key={type.id}
+													className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full"
+													title={type.id}
+												>
+													{type.name || shortenId(type.id)}
+												</span>
+											))}
+										</div>
+									)}
+								</div>
+								<div className="flex items-start gap-3 shrink-0 text-xs text-muted-foreground font-mono">
+									{result.entityId && (
+										<div className="flex flex-col">
+											<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans">
+												Entity ID
+											</span>
+											<div className="flex items-center px-2 py-1">
+												{shortenId(result.entityId)}
+												<CopyButton text={result.entityId} label="entity ID" />
+											</div>
+										</div>
+									)}
+									{result.space?.id && (
+										<div className="flex flex-col">
+											<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans">
+												Space ID
+											</span>
+											<div className="flex items-center px-2 py-1">
+												{shortenId(result.space.id)}
+												<CopyButton text={result.space.id} label="space ID" />
+											</div>
+										</div>
+									)}
+								</div>
 							</div>
 							{result.description && (
 								<ExpandableDescription description={result.description} />
 							)}
-							<div className="flex flex-wrap items-start justify-between gap-3 text-xs text-muted-foreground text-left">
-								{("entityGlobalScore" in result ||
-									"entitySpaceScore" in result ||
-									"spaceScore" in result ||
-									"relevanceScore" in result ||
-									"textMatchScore" in result) && (
-									<div className="flex flex-col gap-1">
-										<span className="text-[10px] text-muted-foreground/70 mb-0.5">
-											Scores
-										</span>
-										<div className="flex flex-wrap items-center gap-2">
+							{(result.space?.name || result.space?.description) && (
+								<p className="text-[11px] text-muted-foreground/60 mb-2 truncate">
+									<span className="text-muted-foreground/40 uppercase tracking-wider text-[9px] mr-1.5">Space</span>
+									{result.space.name}
+									{result.space.name && result.space.description && (
+										<span className="mx-1">&middot;</span>
+									)}
+									{result.space.description}
+								</p>
+							)}
+							<div className="flex items-start text-xs text-muted-foreground text-left font-mono">
+								<div className="w-[340px] shrink-0">
+									<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans block">
+										Scores
+									</span>
+									<div className="grid grid-cols-3 items-center">
+										<span className="px-2 py-1 tabular-nums">
 											{"entityGlobalScore" in result && (
-												<span className="bg-muted px-2 py-1 rounded">
+												<>
 													Global:{" "}
 													{result.entityGlobalScore !== null &&
 													result.entityGlobalScore !== undefined
 														? result.entityGlobalScore.toFixed(2).replace(/\.?0+$/, "")
 														: "null"}
-												</span>
+												</>
 											)}
+										</span>
+										<span className="px-2 py-1 tabular-nums">
 											{"spaceScore" in result && (
-												<span className="bg-secondary px-2 py-1 rounded">
+												<>
 													Space:{" "}
 													{result.spaceScore !== null &&
 													result.spaceScore !== undefined
 														? result.spaceScore.toFixed(2).replace(/\.?0+$/, "")
 														: "null"}
-												</span>
+												</>
 											)}
+										</span>
+										<span className="px-2 py-1 tabular-nums">
 											{"entitySpaceScore" in result && (
-												<span className="bg-accent px-2 py-1 rounded">
+												<>
 													Entity:{" "}
 													{result.entitySpaceScore !== null &&
 													result.entitySpaceScore !== undefined
 														? result.entitySpaceScore.toFixed(2).replace(/\.?0+$/, "")
 														: "null"}
-												</span>
+												</>
 											)}
+										</span>
+									</div>
+								</div>
+								{("relevanceScore" in result ||
+									"textMatchScore" in result) && (
+									<div className="flex flex-col border-l border-border pl-4">
+										<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans">
+											Search
+										</span>
+										<div className="flex flex-wrap items-center gap-2">
 											{"relevanceScore" in result && (
-												<span className="bg-muted px-2 py-1 rounded">
-													Relevance:{" "}
+												<span className="px-2 py-1 tabular-nums">
+													Final:{" "}
 													{result.relevanceScore !== null &&
 													result.relevanceScore !== undefined
 														? result.relevanceScore.toFixed(2).replace(/\.?0+$/, "")
@@ -213,7 +284,7 @@ export function SearchResults({
 												</span>
 											)}
 											{"textMatchScore" in result && (
-												<span className="bg-muted px-2 py-1 rounded">
+												<span className="px-2 py-1 tabular-nums">
 													Text:{" "}
 													{result.textMatchScore !== null &&
 													result.textMatchScore !== undefined
@@ -224,30 +295,6 @@ export function SearchResults({
 										</div>
 									</div>
 								)}
-								<div className="flex flex-wrap items-start gap-3 ml-auto">
-									{result.entityId && (
-										<div className="flex flex-col">
-											<span className="text-[10px] text-muted-foreground/70 mb-0.5">
-												Entity ID
-											</span>
-											<div className="flex items-center font-mono bg-muted px-2 py-1 rounded">
-												{shortenId(result.entityId)}
-												<CopyButton text={result.entityId} label="entity ID" />
-											</div>
-										</div>
-									)}
-									{result.spaceId && (
-										<div className="flex flex-col">
-											<span className="text-[10px] text-muted-foreground/70 mb-0.5">
-												Space ID
-											</span>
-											<div className="flex items-center font-mono bg-muted px-2 py-1 rounded">
-												{shortenId(result.spaceId)}
-												<CopyButton text={result.spaceId} label="space ID" />
-											</div>
-										</div>
-									)}
-								</div>
 							</div>
 						</CardContent>
 					</Card>

@@ -29,13 +29,13 @@ describe("SearchResults", () => {
 		const mockResults: SearchResult[] = [
 			{
 				entityId: "1",
-				spaceId: "space-1",
+				space: { id: "space-1" },
 				name: "Blockchain",
 				description: "A distributed ledger",
 			},
 			{
 				entityId: "2",
-				spaceId: "space-2",
+				space: { id: "space-2" },
 				name: "Block Inc",
 				description: "A company",
 			},
@@ -54,7 +54,7 @@ describe("SearchResults", () => {
 		const mockResults: SearchResult[] = [
 			{
 				entityId: "1",
-				spaceId: "space-1",
+				space: { id: "space-1" },
 				name: "Blockchain",
 			},
 		];
@@ -79,7 +79,7 @@ describe("SearchResults", () => {
 		const mockResults: SearchResult[] = [
 			{
 				entityId: "1",
-				spaceId: "space-1",
+				space: { id: "space-1" },
 				name: "Blockchain",
 			},
 		];
@@ -97,7 +97,7 @@ describe("SearchResults", () => {
 		const problematicResults = [
 			{
 				entityId: "1",
-				spaceId: "space-1",
+				space: { id: "space-1" },
 				name: "Blockchain",
 			},
 			null,

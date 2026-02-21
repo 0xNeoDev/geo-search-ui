@@ -6,13 +6,34 @@ export enum SearchScope {
 	SpaceSingle = "SPACE_SINGLE",
 }
 
+export interface SearchResultType {
+	/** The type's unique identifier. */
+	id: string;
+	/** Optional type display name. */
+	name?: string;
+}
+
+export interface SearchResultSpace {
+	/** The space's unique identifier. */
+	id: string;
+	/** Optional space display name. */
+	name?: string;
+	/** Optional space description. */
+	description?: string;
+	/** Optional space avatar image URL. */
+	avatar?: string;
+	/** Optional space cover image URL. */
+	cover?: string;
+}
+
 export interface SearchResult {
 	entityId: string;
-	spaceId: string;
-	name: string;
+	space: SearchResultSpace;
+	name?: string;
 	description?: string;
 	avatar?: string;
 	cover?: string;
+	types?: SearchResultType[];
 	entityGlobalScore?: number;
 	spaceScore?: number;
 	entitySpaceScore?: number;

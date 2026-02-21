@@ -28,7 +28,7 @@ describe("SearchBar", () => {
 			results: [
 				{
 					entityId: "1",
-					spaceId: "space-1",
+					space: { id: "space-1" },
 					name: "Blockchain",
 				},
 			],
