@@ -158,6 +158,13 @@ export function SearchResults({
 						key={resultKey}
 						className="cursor-pointer hover:bg-accent/50 transition-colors border-border text-left w-full overflow-hidden"
 					>
+						{result.cover && (
+							<img
+								src={result.cover}
+								alt=""
+								className="w-full h-16 object-cover"
+							/>
+						)}
 						<CardContent className="p-4 text-left overflow-hidden">
 							<div className="flex items-start gap-3 mb-1">
 								{result.avatar && (
