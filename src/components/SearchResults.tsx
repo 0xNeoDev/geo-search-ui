@@ -20,6 +20,22 @@ function shortenId(id: string | undefined): string {
 	return id.substring(0, 4);
 }
 
+function resolveImageUrl(url: string | undefined): string | undefined {
+	if (!url) return undefined;
+	if (url.startsWith("ipfs://")) {
+		return `https://gateway.pinata.cloud/ipfs/${url.slice(7)}`;
+	}
+	return url;
+}
+
+function ipfsFallbackUrl(url: string | undefined): string | undefined {
+	if (!url) return undefined;
+	if (url.startsWith("ipfs://")) {
+		return `https://ipfs.io/ipfs/${url.slice(7)}`;
+	}
+	return url;
+}
+
 function CopyButton({
 	text,
 	label,
@@ -160,18 +176,30 @@ export function SearchResults({
 					>
 						{result.cover && (
 							<img
-								src={result.cover}
+								src={resolveImageUrl(result.cover)}
 								alt=""
 								className="w-full h-16 object-cover"
+								onError={(e) => {
+									const fallback = ipfsFallbackUrl(result.cover);
+									if (fallback && e.currentTarget.src !== fallback) {
+										e.currentTarget.src = fallback;
+									}
+								}}
 							/>
 						)}
 						<CardContent className="p-4 text-left overflow-hidden">
 							<div className="flex items-start gap-3 mb-1">
 								{result.avatar && (
 									<img
-										src={result.avatar}
+										src={resolveImageUrl(result.avatar)}
 										alt=""
 										className="h-9 w-9 rounded-md object-cover shrink-0 mt-0.5"
+										onError={(e) => {
+											const fallback = ipfsFallbackUrl(result.avatar);
+											if (fallback && e.currentTarget.src !== fallback) {
+												e.currentTarget.src = fallback;
+											}
+										}}
 									/>
 								)}
 								<div className="min-w-0 flex-1">
@@ -181,19 +209,6 @@ export function SearchResults({
 									>
 										{result.name}
 									</div>
-									{result.types && result.types.length > 0 && (
-										<div className="flex flex-wrap gap-1 mt-0.5">
-											{result.types.map((type) => (
-												<span
-													key={type.id}
-													className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full"
-													title={type.id}
-												>
-													{type.name || shortenId(type.id)}
-												</span>
-											))}
-										</div>
-									)}
 								</div>
 								<div className="flex items-start gap-3 shrink-0 text-xs text-muted-foreground font-mono -mt-1">
 									{result.entityId && (
@@ -303,6 +318,21 @@ export function SearchResults({
 									</div>
 								)}
 							</div>
+							{result.types && result.types.length > 0 && (
+								<div className="flex items-start gap-3 text-xs text-muted-foreground font-mono mt-2">
+									{result.types.map((type) => (
+										<div key={type.id} className="flex flex-col">
+											<span className="text-[10px] text-muted-foreground/70 font-sans">
+												{type.name || "Type"}
+											</span>
+											<div className="flex items-center py-0.5">
+												{shortenId(type.id)}
+												<CopyButton text={type.id} label="type ID" />
+											</div>
+										</div>
+									))}
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				);
