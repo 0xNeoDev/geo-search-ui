@@ -1,4 +1,4 @@
-import { Info, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,10 +50,14 @@ interface SearchBarProps {
 export function SearchBar({ scope, spaceId, typeIds }: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams();
 
-	// Initialize query from URL params (only on mount)
+	// Initialize query and page from URL params (only on mount)
 	const [query, setQuery] = useState(() => {
 		const params = getUrlParams();
 		return params.query || "";
+	});
+	const [page, setPage] = useState(() => {
+		const params = getUrlParams();
+		return params.page ?? 0;
 	});
 	const debouncedQuery = useDebounce(query, 300);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -72,25 +76,49 @@ export function SearchBar({ scope, spaceId, typeIds }: SearchBarProps) {
 			isInitialMount.current = false;
 			// On initial mount, only update if we have a query to ensure it's in the URL
 			if (initialQueryRef.current) {
-				updateUrl({ query: debouncedQuery, scope, spaceId: spaceIdParam });
+				updateUrl({ query: debouncedQuery, scope, spaceId: spaceIdParam, page: page > 0 ? page : undefined });
 			}
 			return;
 		}
 		// After initial mount, update URL with all params
-		updateUrl({ query: debouncedQuery, scope, spaceId: spaceIdParam });
-	}, [debouncedQuery, scope, spaceId, updateUrl]);
+		updateUrl({ query: debouncedQuery, scope, spaceId: spaceIdParam, page: page > 0 ? page : undefined });
+	}, [debouncedQuery, scope, spaceId, page, updateUrl]);
+
+	// Reset page when search parameters change
+	const prevSearchKey = useRef(`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}`);
+	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}`;
+	if (searchKey !== prevSearchKey.current) {
+		prevSearchKey.current = searchKey;
+		if (page !== 0) {
+			setPage(0);
+		}
+	}
 
 	// TanStack Query handles all the race conditions, cancellation, and state management
 	const {
 		data,
 		isLoading,
 		error: queryError,
-	} = useSearchEntities(debouncedQuery, scope, spaceId, typeIds);
+		pageSize,
+	} = useSearchEntities(debouncedQuery, scope, spaceId, typeIds, page);
 
-	// Don't show stale results while fetching new data
-	const results: SearchResult[] = isLoading ? [] : (data?.results ?? []);
-	const tookMs = isLoading ? undefined : data?.tookMs;
-	const total = isLoading ? undefined : data?.total;
+	// Show previous page data while new page loads (keepPreviousData)
+	const results: SearchResult[] = data?.results ?? [];
+	const tookMs = data?.tookMs;
+	const total = data?.total;
+
+	// Keep last known total so pagination controls stay visible during loading
+	const lastTotalRef = useRef<number | undefined>(undefined);
+	if (total !== undefined) {
+		lastTotalRef.current = total;
+	}
+	// Reset last total when search params change (not just page)
+	const prevPaginationSearchKey = useRef(searchKey);
+	if (searchKey !== prevPaginationSearchKey.current) {
+		prevPaginationSearchKey.current = searchKey;
+		lastTotalRef.current = undefined;
+	}
+	const stableTotal = total ?? lastTotalRef.current;
 
 	// Convert query error to string for display
 	const error =
@@ -111,8 +139,15 @@ export function SearchBar({ scope, spaceId, typeIds }: SearchBarProps) {
 
 	const handleClear = () => {
 		setQuery("");
+		setPage(0);
 		inputRef.current?.focus();
 	};
+
+	const MAX_PAGES = 10;
+	const paginationTotal = stableTotal;
+	const totalPages = paginationTotal !== undefined ? Math.min(Math.ceil(paginationTotal / pageSize), MAX_PAGES) : 0;
+	const hasNextPage = page + 1 < totalPages;
+	const hasPrevPage = page > 0;
 
 	return (
 		<div className="w-full h-full flex flex-col min-h-0 min-w-0">
@@ -184,12 +219,38 @@ export function SearchBar({ scope, spaceId, typeIds }: SearchBarProps) {
 
 			<div className="flex-1 min-h-0 mt-2">
 				<SearchResults
-					key={`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}`}
+					key={`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${page}`}
 					results={results}
 					isLoading={isLoading}
 					query={debouncedQuery}
 				/>
 			</div>
+
+			{totalPages > 1 && (
+				<div className="flex items-center justify-center gap-2 py-3 flex-shrink-0 border-t">
+					<button
+						type="button"
+						onClick={() => setPage((p) => Math.max(0, p - 1))}
+						disabled={!hasPrevPage}
+						className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border rounded-md hover:bg-accent transition-colors disabled:opacity-50 disabled:pointer-events-none"
+					>
+						<ChevronLeft className="h-4 w-4" />
+						Prev
+					</button>
+					<span className="text-sm text-muted-foreground tabular-nums">
+						Page {page + 1} of {totalPages.toLocaleString()}
+					</span>
+					<button
+						type="button"
+						onClick={() => setPage((p) => p + 1)}
+						disabled={!hasNextPage}
+						className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border rounded-md hover:bg-accent transition-colors disabled:opacity-50 disabled:pointer-events-none"
+					>
+						Next
+						<ChevronRight className="h-4 w-4" />
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }

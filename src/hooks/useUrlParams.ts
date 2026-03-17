@@ -7,6 +7,7 @@ interface UrlParams {
 	spaceId?: string;
 	typeIds?: string[];
 	apiUrl?: string;
+	page?: number;
 }
 
 export function useUrlParams() {
@@ -58,6 +59,14 @@ export function useUrlParams() {
 			}
 		}
 
+		if ("page" in params) {
+			if (params.page !== undefined && params.page > 0) {
+				url.searchParams.set("page", String(params.page));
+			} else {
+				url.searchParams.delete("page");
+			}
+		}
+
 		// Update URL without page reload
 		window.history.replaceState({}, "", url.toString());
 	}, []);
@@ -65,12 +74,15 @@ export function useUrlParams() {
 	const getUrlParams = useCallback((): UrlParams => {
 		const params = new URLSearchParams(window.location.search);
 		const typeIds = params.getAll("typeId").filter(Boolean);
+		const pageStr = params.get("page");
+		const page = pageStr ? Number.parseInt(pageStr, 10) : undefined;
 		return {
 			query: params.get("query") || undefined,
 			scope: (params.get("scope") as SearchScope) || undefined,
 			spaceId: params.get("spaceId") || undefined,
 			typeIds: typeIds.length > 0 ? typeIds : undefined,
 			apiUrl: params.get("apiUrl") || undefined,
+			page: page && page > 0 ? page : undefined,
 		};
 	}, []);
 
