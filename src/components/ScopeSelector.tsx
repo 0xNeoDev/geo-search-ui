@@ -1,4 +1,5 @@
 import { Info } from "lucide-react";
+import { useState } from "react";
 import { TypeSelector } from "@/components/TypeSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { SearchScope } from "@/types";
+
+const CANONICAL_ROOT_SPACE_ID = "a19c345a-b986-6679-b001-d7d2138d88a1";
 
 interface ScopeSelectorProps {
 	selectedScope: SearchScope;
@@ -58,6 +61,30 @@ export function ScopeSelector({
 	const needsSpaceId =
 		selectedScope === SearchScope.Space ||
 		selectedScope === SearchScope.SpaceSingle;
+
+	const [useCanonical, setUseCanonical] = useState(
+		() => spaceId === CANONICAL_ROOT_SPACE_ID,
+	);
+
+	// Store the user's custom space ID so we can restore it when they uncheck canonical
+	const [customSpaceId, setCustomSpaceId] = useState(() =>
+		spaceId === CANONICAL_ROOT_SPACE_ID ? "" : spaceId,
+	);
+
+	const handleCanonicalToggle = (checked: boolean) => {
+		setUseCanonical(checked);
+		if (checked) {
+			setCustomSpaceId(spaceId === CANONICAL_ROOT_SPACE_ID ? "" : spaceId);
+			onSpaceIdChange(CANONICAL_ROOT_SPACE_ID);
+		} else {
+			onSpaceIdChange(customSpaceId);
+		}
+	};
+
+	const handleSpaceIdChange = (value: string) => {
+		setCustomSpaceId(value);
+		onSpaceIdChange(value);
+	};
 
 	return (
 		<div className="space-y-6">
@@ -124,13 +151,54 @@ export function ScopeSelector({
 							(required)
 						</span>
 					</Label>
-					<Input
-						id="space-id"
-						placeholder="Enter space UUID"
-						value={spaceId}
-						onChange={(e) => onSpaceIdChange(e.target.value)}
-						className="font-mono text-sm"
-					/>
+					<button
+						type="button"
+						className="flex items-center space-x-3 px-3 py-2 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer w-full text-left"
+						onClick={() => handleCanonicalToggle(!useCanonical)}
+					>
+						<Checkbox
+							id="canonical-root-space"
+							checked={useCanonical}
+							onCheckedChange={(checked) => handleCanonicalToggle(!!checked)}
+							className="pointer-events-none"
+						/>
+						<div className="flex-1 flex items-center justify-between">
+							<Label
+								htmlFor="canonical-root-space"
+								className="text-sm font-medium cursor-pointer"
+							>
+								Canonical Root Space
+							</Label>
+							<Popover>
+								<PopoverTrigger asChild>
+									<button
+										type="button"
+										onClick={(e) => e.stopPropagation()}
+										className="p-1 hover:bg-accent rounded transition-colors"
+										aria-label="Info about canonical root space"
+									>
+										<Info className="h-3.5 w-3.5 text-muted-foreground" />
+									</button>
+								</PopoverTrigger>
+								<PopoverContent
+									className="w-auto text-xs p-2 font-mono"
+									side="left"
+									align="center"
+								>
+									{CANONICAL_ROOT_SPACE_ID}
+								</PopoverContent>
+							</Popover>
+						</div>
+					</button>
+					{!useCanonical && (
+						<Input
+							id="space-id"
+							placeholder="Enter space UUID"
+							value={spaceId}
+							onChange={(e) => handleSpaceIdChange(e.target.value)}
+							className="font-mono text-sm"
+						/>
+					)}
 				</div>
 			)}
 
