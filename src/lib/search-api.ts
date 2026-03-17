@@ -4,12 +4,19 @@ export async function searchEntities(
 	params: SearchParams,
 	apiUrl: string,
 ): Promise<SearchResponse> {
-	const { query, scope, spaceId, typeIds } = params;
+	const { query, scope, spaceId, typeIds, limit, offset } = params;
 
 	const searchParams = new URLSearchParams({
 		query: query.trim(),
 		scope: scope,
 	});
+
+	if (limit !== undefined) {
+		searchParams.append("limit", String(limit));
+	}
+	if (offset !== undefined && offset > 0) {
+		searchParams.append("offset", String(offset));
+	}
 
 	if (spaceId && (scope === "SPACE" || scope === "SPACE_SINGLE")) {
 		searchParams.append("space_id", spaceId);

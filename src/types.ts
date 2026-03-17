@@ -54,6 +54,8 @@ export interface SearchParams {
 	scope: SearchScope;
 	spaceId?: string;
 	typeIds?: string[];
+	limit?: number;
+	offset?: number;
 }
 
 export interface EntityType {

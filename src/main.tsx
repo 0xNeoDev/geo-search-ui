@@ -8,8 +8,8 @@ import "./index.css";
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			staleTime: 0, // Always refetch for search
-			gcTime: 0, // Don't cache search results
+			staleTime: 30_000, // Cache results for 30s before refetching
+			gcTime: 5 * 60_000, // Keep cached pages in memory for 5 minutes
 			retry: false, // Don't retry failed searches
 		},
 	},
