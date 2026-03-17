@@ -163,12 +163,9 @@ export function ScopeSelector({
 							className="pointer-events-none"
 						/>
 						<div className="flex-1 flex items-center justify-between">
-							<Label
-								htmlFor="canonical-root-space"
-								className="text-sm font-medium cursor-pointer"
-							>
+							<span className="text-sm font-medium cursor-pointer">
 								Canonical Root Space
-							</Label>
+							</span>
 							<Popover>
 								<PopoverTrigger asChild>
 									<button
