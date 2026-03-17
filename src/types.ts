@@ -39,6 +39,8 @@ export interface SearchResult {
 	entitySpaceScore?: number;
 	relevanceScore?: number;
 	textMatchScore?: number;
+	/** Whether this entity's space is in the canonical graph. */
+	inCanonicalGraph?: boolean;
 }
 
 export interface SearchResponse {
