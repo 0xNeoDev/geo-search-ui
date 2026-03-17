@@ -203,11 +203,25 @@ export function SearchResults({
 									/>
 								)}
 								<div className="min-w-0 flex-1">
-									<div
-										className="font-semibold text-base text-left truncate"
-										title={result.name}
-									>
-										{result.name}
+									<div className="flex items-center gap-2">
+										<div
+											className="font-semibold text-base text-left truncate"
+											title={result.name}
+										>
+											{result.name}
+										</div>
+										{"inCanonicalGraph" in result && (
+											<span
+												className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+													result.inCanonicalGraph
+														? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+														: "bg-muted text-muted-foreground"
+												}`}
+												title={result.inCanonicalGraph ? "In canonical graph" : "Not in canonical graph"}
+											>
+												{result.inCanonicalGraph ? "Canonical" : "Non-canonical"}
+											</span>
+										)}
 									</div>
 								</div>
 								<div className="flex items-start gap-3 shrink-0 text-xs text-muted-foreground font-mono -mt-1">
