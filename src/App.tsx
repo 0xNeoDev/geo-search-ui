@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/collapsible";
 import { DEFAULT_API_URL, useApiUrl } from "@/hooks/useApiUrl";
 import { useUrlParams } from "@/hooks/useUrlParams";
+import type { ExcludeMode } from "@/types";
 import { SearchScope } from "@/types";
 
 const scopeLabels: Record<SearchScope, string> = {
@@ -45,6 +46,14 @@ function App() {
 		const params = getUrlParams();
 		return params.typeIds || [];
 	});
+	const [excludeMode, setExcludeMode] = useState<ExcludeMode>(() => {
+		const params = getUrlParams();
+		return params.excludeMode || "default";
+	});
+	const [excludeTypeIds, setExcludeTypeIds] = useState<string[]>(() => {
+		const params = getUrlParams();
+		return params.excludeTypeIds || [];
+	});
 	const [optionsOpen, setOptionsOpen] = useState(false);
 
 	// Track if this is the initial mount to avoid clearing URL params
@@ -65,9 +74,16 @@ function App() {
 		// Only include apiUrl in URL when it differs from the default
 		const apiUrlParam = apiUrl !== DEFAULT_API_URL ? apiUrl : undefined;
 
-		// Update scope, spaceId, typeIds, and apiUrl, preserve query
-		updateUrl({ scope, spaceId: spaceIdParam, typeIds, apiUrl: apiUrlParam });
-	}, [scope, spaceId, typeIds, apiUrl, updateUrl]);
+		// Update scope, spaceId, typeIds, excludeMode, excludeTypeIds, and apiUrl, preserve query
+		updateUrl({
+			scope,
+			spaceId: spaceIdParam,
+			typeIds,
+			excludeMode,
+			excludeTypeIds: excludeMode === "custom" ? excludeTypeIds : undefined,
+			apiUrl: apiUrlParam,
+		});
+	}, [scope, spaceId, typeIds, excludeMode, excludeTypeIds, apiUrl, updateUrl]);
 
 	// Get display-friendly API host for the summary
 	const getApiHost = (url: string) => {
@@ -143,6 +159,10 @@ function App() {
 										onSpaceIdChange={setSpaceId}
 										typeIds={typeIds}
 										onTypeIdsChange={setTypeIds}
+										excludeMode={excludeMode}
+										onExcludeModeChange={setExcludeMode}
+										excludeTypeIds={excludeTypeIds}
+										onExcludeTypeIdsChange={setExcludeTypeIds}
 									/>
 									<div className="pt-4 mt-4 border-t">
 										<ApiUrlSelector />
@@ -167,6 +187,8 @@ function App() {
 											: undefined
 									}
 									typeIds={typeIds}
+									excludeMode={excludeMode}
+									excludeTypeIds={excludeTypeIds}
 								/>
 							</CardContent>
 						</Card>
@@ -194,6 +216,10 @@ function App() {
 									onSpaceIdChange={setSpaceId}
 									typeIds={typeIds}
 									onTypeIdsChange={setTypeIds}
+									excludeMode={excludeMode}
+									onExcludeModeChange={setExcludeMode}
+									excludeTypeIds={excludeTypeIds}
+									onExcludeTypeIdsChange={setExcludeTypeIds}
 								/>
 
 								<div className="pt-6 mt-6 border-t">
