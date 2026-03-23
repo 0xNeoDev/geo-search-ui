@@ -1,11 +1,13 @@
 import { useCallback } from "react";
-import type { SearchScope } from "@/types";
+import type { ExcludeMode, SearchScope } from "@/types";
 
 interface UrlParams {
 	query?: string;
 	scope?: SearchScope;
 	spaceId?: string;
 	typeIds?: string[];
+	excludeMode?: ExcludeMode;
+	excludeTypeIds?: string[];
 	apiUrl?: string;
 	page?: number;
 }
@@ -51,6 +53,23 @@ export function useUrlParams() {
 			}
 		}
 
+		if ("excludeMode" in params) {
+			if (params.excludeMode && params.excludeMode !== "default") {
+				url.searchParams.set("excludeMode", params.excludeMode);
+			} else {
+				url.searchParams.delete("excludeMode");
+			}
+		}
+
+		if ("excludeTypeIds" in params) {
+			url.searchParams.delete("excludeTypeId");
+			if (params.excludeTypeIds && params.excludeTypeIds.length > 0) {
+				for (const id of params.excludeTypeIds) {
+					url.searchParams.append("excludeTypeId", id);
+				}
+			}
+		}
+
 		if ("apiUrl" in params) {
 			if (params.apiUrl?.trim()) {
 				url.searchParams.set("apiUrl", params.apiUrl.trim());
@@ -74,6 +93,8 @@ export function useUrlParams() {
 	const getUrlParams = useCallback((): UrlParams => {
 		const params = new URLSearchParams(window.location.search);
 		const typeIds = params.getAll("typeId").filter(Boolean);
+		const excludeTypeIds = params.getAll("excludeTypeId").filter(Boolean);
+		const excludeMode = params.get("excludeMode") as ExcludeMode | null;
 		const pageStr = params.get("page");
 		const page = pageStr ? Number.parseInt(pageStr, 10) : undefined;
 		return {
@@ -81,6 +102,8 @@ export function useUrlParams() {
 			scope: (params.get("scope") as SearchScope) || undefined,
 			spaceId: params.get("spaceId") || undefined,
 			typeIds: typeIds.length > 0 ? typeIds : undefined,
+			excludeMode: excludeMode || undefined,
+			excludeTypeIds: excludeTypeIds.length > 0 ? excludeTypeIds : undefined,
 			apiUrl: params.get("apiUrl") || undefined,
 			page: page && page > 0 ? page : undefined,
 		};
