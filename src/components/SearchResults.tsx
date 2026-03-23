@@ -13,9 +13,7 @@ function normalizeuuid(id: string): string {
 function resolveTypeName(typeId: string, apiName?: string): string {
 	if (apiName) return apiName;
 	const normalized = normalizeuuid(typeId);
-	const known = ENTITY_TYPES.find(
-		(t) => normalizeuuid(t.id) === normalized,
-	);
+	const known = ENTITY_TYPES.find((t) => normalizeuuid(t.id) === normalized);
 	return known?.name ?? "Type";
 }
 

@@ -123,18 +123,11 @@ export function ScopeSelector({
 				<Label className="text-sm font-semibold">Search Scope</Label>
 				<div className="grid grid-cols-1 gap-2">
 					{scopes.map((scope) => (
-						<div
+						<button
 							key={scope.value}
-							role="button"
-							tabIndex={0}
+							type="button"
 							className="flex items-center space-x-3 px-3 py-2 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer w-full text-left"
 							onClick={() => onScopeChange(scope.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									onScopeChange(scope.value);
-								}
-							}}
 						>
 							<Checkbox
 								id={scope.value}
@@ -169,7 +162,7 @@ export function ScopeSelector({
 									</PopoverContent>
 								</Popover>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 			</div>
