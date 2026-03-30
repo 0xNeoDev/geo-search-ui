@@ -4,7 +4,7 @@ export async function searchEntities(
 	params: SearchParams,
 	apiUrl: string,
 ): Promise<SearchResponse> {
-	const { query, scope, spaceId, typeIds, limit, offset } = params;
+	const { query, scope, spaceId, typeIds, limit, offset, boosts } = params;
 
 	const searchParams = new URLSearchParams({
 		query: query.trim(),
@@ -25,6 +25,15 @@ export async function searchEntities(
 	if (typeIds && typeIds.length > 0) {
 		for (const typeId of typeIds) {
 			searchParams.append("type_ids", typeId);
+		}
+	}
+
+	// Append boost overrides
+	if (boosts) {
+		for (const [key, value] of Object.entries(boosts)) {
+			if (value !== undefined) {
+				searchParams.append(key, String(value));
+			}
 		}
 	}
 

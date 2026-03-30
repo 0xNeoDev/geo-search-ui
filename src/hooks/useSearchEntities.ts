@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { searchEntities } from "@/lib/search-api";
-import type { SearchParams, SearchResponse, SearchScope } from "@/types";
+import type { BoostOverrides, SearchParams, SearchResponse, SearchScope } from "@/types";
 
 const PAGE_SIZE = 100;
 
@@ -11,6 +11,7 @@ export function useSearchEntities(
 	spaceId?: string,
 	typeIds?: string[],
 	page = 0,
+	boosts?: BoostOverrides,
 ) {
 	const { apiUrl } = useApiUrl();
 	const needsSpaceId = scope === "SPACE" || scope === "SPACE_SINGLE";
@@ -20,6 +21,7 @@ export function useSearchEntities(
 
 	// Build query key that includes all search parameters AND the API URL
 	// When API URL changes, TanStack Query will automatically refetch
+	const boostKey = boosts ? JSON.stringify(boosts) : "";
 	const queryKey = [
 		"search",
 		query.trim(),
@@ -28,6 +30,7 @@ export function useSearchEntities(
 		typeIds?.sort().join(",") ?? "",
 		apiUrl,
 		offset,
+		boostKey,
 	];
 
 	// Build params
@@ -38,6 +41,7 @@ export function useSearchEntities(
 		offset,
 		...(hasValidSpaceId && spaceId && { spaceId: spaceId.trim() }),
 		...(typeIds && typeIds.length > 0 && { typeIds }),
+		...(boosts && Object.keys(boosts).length > 0 && { boosts }),
 	};
 
 	const result = useQuery<SearchResponse>({

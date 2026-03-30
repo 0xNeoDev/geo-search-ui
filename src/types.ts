@@ -49,6 +49,36 @@ export interface SearchResponse {
 	tookMs: number;
 }
 
+export interface BoostOverrides {
+	score_boost?: number;
+	name_prefix_boost?: number;
+	description_prefix_boost?: number;
+	name_field_boost?: number;
+	name_exact_token_boost?: number;
+	name_raw_exact_boost?: number;
+	fuzzy_reduction_boost?: number;
+}
+
+export const BOOST_DEFAULTS: Required<BoostOverrides> = {
+	score_boost: 20.0,
+	name_prefix_boost: 5.0,
+	description_prefix_boost: 1.5,
+	name_field_boost: 1.5,
+	name_exact_token_boost: 8.0,
+	name_raw_exact_boost: 10.0,
+	fuzzy_reduction_boost: 0.6,
+};
+
+export const BOOST_LABELS: Record<keyof BoostOverrides, string> = {
+	score_boost: "Score Boost",
+	name_prefix_boost: "Name Prefix",
+	description_prefix_boost: "Desc Prefix",
+	name_field_boost: "Name Field",
+	name_exact_token_boost: "Name Exact Token",
+	name_raw_exact_boost: "Name Raw Exact",
+	fuzzy_reduction_boost: "Fuzzy Reduction",
+};
+
 export interface SearchParams {
 	query: string;
 	scope: SearchScope;
@@ -56,6 +86,7 @@ export interface SearchParams {
 	typeIds?: string[];
 	limit?: number;
 	offset?: number;
+	boosts?: BoostOverrides;
 }
 
 export interface EntityType {

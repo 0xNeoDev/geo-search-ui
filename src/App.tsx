@@ -1,6 +1,7 @@
 import { ChevronDown, Github, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ApiUrlSelector } from "@/components/ApiUrlSelector";
+import { BoostControls } from "@/components/BoostControls";
 import { ScopeSelector } from "@/components/ScopeSelector";
 import { formatTypeFilters, SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/collapsible";
 import { DEFAULT_API_URL, useApiUrl } from "@/hooks/useApiUrl";
 import { useUrlParams } from "@/hooks/useUrlParams";
+import type { BoostOverrides } from "@/types";
 import { SearchScope } from "@/types";
 
 const scopeLabels: Record<SearchScope, string> = {
@@ -45,6 +47,10 @@ function App() {
 		const params = getUrlParams();
 		return params.typeIds || [];
 	});
+	const [boosts, setBoosts] = useState<BoostOverrides>(() => {
+		const params = getUrlParams();
+		return params.boosts || {};
+	});
 	const [optionsOpen, setOptionsOpen] = useState(false);
 
 	// Track if this is the initial mount to avoid clearing URL params
@@ -66,8 +72,8 @@ function App() {
 		const apiUrlParam = apiUrl !== DEFAULT_API_URL ? apiUrl : undefined;
 
 		// Update scope, spaceId, typeIds, and apiUrl, preserve query
-		updateUrl({ scope, spaceId: spaceIdParam, typeIds, apiUrl: apiUrlParam });
-	}, [scope, spaceId, typeIds, apiUrl, updateUrl]);
+		updateUrl({ scope, spaceId: spaceIdParam, typeIds, apiUrl: apiUrlParam, boosts });
+	}, [scope, spaceId, typeIds, apiUrl, boosts, updateUrl]);
 
 	// Get display-friendly API host for the summary
 	const getApiHost = (url: string) => {
@@ -145,6 +151,9 @@ function App() {
 										onTypeIdsChange={setTypeIds}
 									/>
 									<div className="pt-4 mt-4 border-t">
+										<BoostControls boosts={boosts} onBoostsChange={setBoosts} />
+									</div>
+									<div className="pt-4 mt-4 border-t">
 										<ApiUrlSelector />
 									</div>
 								</CardContent>
@@ -167,6 +176,7 @@ function App() {
 											: undefined
 									}
 									typeIds={typeIds}
+									boosts={Object.keys(boosts).length > 0 ? boosts : undefined}
 								/>
 							</CardContent>
 						</Card>
@@ -196,6 +206,9 @@ function App() {
 									onTypeIdsChange={setTypeIds}
 								/>
 
+								<div className="pt-6 mt-6 border-t">
+									<BoostControls boosts={boosts} onBoostsChange={setBoosts} />
+								</div>
 								<div className="pt-6 mt-6 border-t">
 									<ApiUrlSelector />
 								</div>
