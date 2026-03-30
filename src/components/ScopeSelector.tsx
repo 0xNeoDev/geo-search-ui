@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
+import { ExcludeTypeSelector } from "@/components/ExcludeTypeSelector";
 import { TypeSelector } from "@/components/TypeSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,8 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { SearchScope } from "@/types";
+import type { ExcludeMode } from "@/types";
+import { DEFAULT_EXCLUDED_TYPE_IDS, ENTITY_TYPES, SearchScope } from "@/types";
 
 const CANONICAL_ROOT_SPACE_ID = "a19c345a-b986-6679-b001-d7d2138d88a1";
 
@@ -20,6 +22,10 @@ interface ScopeSelectorProps {
 	onSpaceIdChange: (spaceId: string) => void;
 	typeIds: string[];
 	onTypeIdsChange: (typeIds: string[]) => void;
+	excludeMode: ExcludeMode;
+	onExcludeModeChange: (mode: ExcludeMode) => void;
+	excludeTypeIds: string[];
+	onExcludeTypeIdsChange: (ids: string[]) => void;
 }
 
 export function ScopeSelector({
@@ -29,6 +35,10 @@ export function ScopeSelector({
 	onSpaceIdChange,
 	typeIds,
 	onTypeIdsChange,
+	excludeMode,
+	onExcludeModeChange,
+	excludeTypeIds,
+	onExcludeTypeIdsChange,
 }: ScopeSelectorProps) {
 	const scopes = [
 		{
@@ -86,24 +96,38 @@ export function ScopeSelector({
 		onSpaceIdChange(value);
 	};
 
+	// Detect overlap between include and exclude type IDs
+	const overlappingIds = (() => {
+		if (excludeMode === "default") {
+			// Check against default excluded IDs
+			const defaultIds = DEFAULT_EXCLUDED_TYPE_IDS.map((t) => t.id);
+			return typeIds.filter((id) => defaultIds.includes(id));
+		}
+		if (excludeMode === "custom") {
+			return typeIds.filter((id) => excludeTypeIds.includes(id));
+		}
+		return [];
+	})();
+
+	const resolveTypeName = (id: string) => {
+		const known = ENTITY_TYPES.find((t) => t.id === id);
+		if (known) return known.name;
+		const defaultType = DEFAULT_EXCLUDED_TYPE_IDS.find((t) => t.id === id);
+		if (defaultType) return defaultType.name;
+		return `${id.slice(0, 8)}...`;
+	};
+
 	return (
 		<div className="space-y-6">
 			<div className="space-y-3">
 				<Label className="text-sm font-semibold">Search Scope</Label>
 				<div className="grid grid-cols-1 gap-2">
 					{scopes.map((scope) => (
-						<div
+						<button
 							key={scope.value}
-							role="button"
-							tabIndex={0}
+							type="button"
 							className="flex items-center space-x-3 px-3 py-2 rounded-md border border-border hover:bg-accent/50 transition-colors cursor-pointer w-full text-left"
 							onClick={() => onScopeChange(scope.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									onScopeChange(scope.value);
-								}
-							}}
 						>
 							<Checkbox
 								id={scope.value}
@@ -138,7 +162,7 @@ export function ScopeSelector({
 									</PopoverContent>
 								</Popover>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 			</div>
@@ -203,6 +227,25 @@ export function ScopeSelector({
 				<TypeSelector
 					selectedTypeIds={typeIds}
 					onTypeIdsChange={onTypeIdsChange}
+				/>
+			</div>
+
+			{overlappingIds.length > 0 && (
+				<div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+					<span className="font-medium">Conflict:</span>{" "}
+					{overlappingIds.map((id) => resolveTypeName(id)).join(", ")}{" "}
+					{overlappingIds.length === 1 ? "is" : "are"} in both include and
+					exclude filters. A type cannot be included and excluded at the same
+					time.
+				</div>
+			)}
+
+			<div className="pt-4 border-t">
+				<ExcludeTypeSelector
+					excludeMode={excludeMode}
+					onExcludeModeChange={onExcludeModeChange}
+					excludeTypeIds={excludeTypeIds}
+					onExcludeTypeIdsChange={onExcludeTypeIdsChange}
 				/>
 			</div>
 		</div>

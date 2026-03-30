@@ -71,7 +71,7 @@ export function BoostControls({ boosts, onBoostsChange }: BoostControlsProps) {
 								id={`boost-${key}`}
 								type="number"
 								min="0"
-								step="0.1"
+								step={key === "fuzzy_reduction_boost" ? "0.1" : "1"}
 								value={current ?? defaultVal}
 								onChange={(e) => handleChange(key, e.target.value)}
 								className={`w-20 h-7 px-2 text-xs rounded border bg-background text-right tabular-nums ${

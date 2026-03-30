@@ -79,15 +79,29 @@ export const BOOST_LABELS: Record<keyof BoostOverrides, string> = {
 	fuzzy_reduction_boost: "Fuzzy Reduction",
 };
 
+export type ExcludeMode = "default" | "none" | "custom";
+
 export interface SearchParams {
 	query: string;
 	scope: SearchScope;
 	spaceId?: string;
 	typeIds?: string[];
+	excludeMode?: ExcludeMode;
+	excludeTypeIds?: string[];
 	limit?: number;
 	offset?: number;
 	boosts?: BoostOverrides;
 }
+
+/** Default excluded type IDs (block/media types). */
+export const DEFAULT_EXCLUDED_TYPE_IDS: EntityType[] = [
+	{ id: "76474f2f-0089-4e77-a041-0b39fb17d0bf", name: "Text Block" },
+	{ id: "e3817941-7409-4df1-b519-1f3f1a0721e8", name: "Image Block" },
+	{ id: "b8803a86-65de-412b-bb35-7e0c84adf473", name: "Data Block" },
+	{ id: "ba4e4146-0010-499d-a0a3-caaa7f579d0e", name: "Image Type" },
+	{ id: "d7a4817c-9795-405b-93e2-12df759c43f8", name: "Video Type" },
+	{ id: "809bc406-d0f3-4f3c-a8a1-aa265733c6ce", name: "Video Block" },
+];
 
 export interface EntityType {
 	id: string;
@@ -99,4 +113,5 @@ export const ENTITY_TYPES: EntityType[] = [
 	{ id: "7ed45f2b-c48b-419e-8e46-64d5ff680b0d", name: "Person" },
 	{ id: "972d201a-d780-4568-9e01-543f67b26bee", name: "Episode" },
 	{ id: "4c81561d-1f95-4131-9cdd-dd20ab831ba2", name: "Podcast" },
+	...DEFAULT_EXCLUDED_TYPE_IDS,
 ];

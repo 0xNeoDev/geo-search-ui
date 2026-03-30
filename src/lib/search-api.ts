@@ -4,7 +4,17 @@ export async function searchEntities(
 	params: SearchParams,
 	apiUrl: string,
 ): Promise<SearchResponse> {
-	const { query, scope, spaceId, typeIds, limit, offset, boosts } = params;
+	const {
+		query,
+		scope,
+		spaceId,
+		typeIds,
+		excludeMode,
+		excludeTypeIds,
+		limit,
+		offset,
+		boosts,
+	} = params;
 
 	const searchParams = new URLSearchParams({
 		query: query.trim(),
@@ -27,6 +37,18 @@ export async function searchEntities(
 			searchParams.append("type_ids", typeId);
 		}
 	}
+
+	// Handle exclude_type_ids: omitted = server defaults, empty = no exclusions, custom = specific IDs
+	if (excludeMode === "none") {
+		searchParams.append("exclude_type_ids", "");
+	} else if (
+		excludeMode === "custom" &&
+		excludeTypeIds &&
+		excludeTypeIds.length > 0
+	) {
+		searchParams.append("exclude_type_ids", excludeTypeIds.join(","));
+	}
+	// "default" or undefined: omit the parameter entirely, server applies defaults
 
 	// Append boost overrides
 	if (boosts) {

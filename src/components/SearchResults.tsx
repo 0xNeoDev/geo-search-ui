@@ -1,13 +1,21 @@
-import {
-	Check,
-	ChevronDown,
-	ChevronUp,
-	Copy,
-	Loader2,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Copy, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SearchResult } from "@/types";
+import { ENTITY_TYPES } from "@/types";
+
+/** Normalize a UUID by removing dashes for comparison. */
+function normalizeuuid(id: string): string {
+	return id.replace(/-/g, "");
+}
+
+/** Resolve a type name from the API response or our known types list. */
+function resolveTypeName(typeId: string, apiName?: string): string {
+	if (apiName) return apiName;
+	const normalized = normalizeuuid(typeId);
+	const known = ENTITY_TYPES.find((t) => normalizeuuid(t.id) === normalized);
+	return known?.name ?? "Type";
+}
 
 interface SearchResultsProps {
 	results: SearchResult[];
@@ -217,9 +225,15 @@ export function SearchResults({
 														? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
 														: "bg-muted text-muted-foreground"
 												}`}
-												title={result.inCanonicalGraph ? "In canonical graph" : "Not in canonical graph"}
+												title={
+													result.inCanonicalGraph
+														? "In canonical graph"
+														: "Not in canonical graph"
+												}
 											>
-												{result.inCanonicalGraph ? "Canonical" : "Non-canonical"}
+												{result.inCanonicalGraph
+													? "Canonical"
+													: "Non-canonical"}
 											</span>
 										)}
 									</div>
@@ -254,7 +268,9 @@ export function SearchResults({
 							)}
 							{(result.space?.name || result.space?.description) && (
 								<p className="text-[11px] text-muted-foreground/60 mb-2 truncate">
-									<span className="text-muted-foreground/40 uppercase tracking-wider text-[9px] mr-1.5">Space</span>
+									<span className="text-muted-foreground/40 uppercase tracking-wider text-[9px] mr-1.5">
+										Space
+									</span>
 									{result.space.name}
 									{result.space.name && result.space.description && (
 										<span className="mx-1">&middot;</span>
@@ -274,7 +290,9 @@ export function SearchResults({
 													Global:{" "}
 													{result.entityGlobalScore !== null &&
 													result.entityGlobalScore !== undefined
-														? result.entityGlobalScore.toFixed(2).replace(/\.?0+$/, "")
+														? result.entityGlobalScore
+																.toFixed(2)
+																.replace(/\.?0+$/, "")
 														: "null"}
 												</>
 											)}
@@ -296,15 +314,16 @@ export function SearchResults({
 													Entity:{" "}
 													{result.entitySpaceScore !== null &&
 													result.entitySpaceScore !== undefined
-														? result.entitySpaceScore.toFixed(2).replace(/\.?0+$/, "")
+														? result.entitySpaceScore
+																.toFixed(2)
+																.replace(/\.?0+$/, "")
 														: "null"}
 												</>
 											)}
 										</span>
 									</div>
 								</div>
-								{("relevanceScore" in result ||
-									"textMatchScore" in result) && (
+								{("relevanceScore" in result || "textMatchScore" in result) && (
 									<div className="flex flex-col border-l border-border pl-4">
 										<span className="text-[10px] text-muted-foreground/70 mb-0.5 font-sans">
 											Search
@@ -315,7 +334,9 @@ export function SearchResults({
 													Final:{" "}
 													{result.relevanceScore !== null &&
 													result.relevanceScore !== undefined
-														? result.relevanceScore.toFixed(2).replace(/\.?0+$/, "")
+														? result.relevanceScore
+																.toFixed(2)
+																.replace(/\.?0+$/, "")
 														: "null"}
 												</span>
 											)}
@@ -324,7 +345,9 @@ export function SearchResults({
 													Text:{" "}
 													{result.textMatchScore !== null &&
 													result.textMatchScore !== undefined
-														? result.textMatchScore.toFixed(2).replace(/\.?0+$/, "")
+														? result.textMatchScore
+																.toFixed(2)
+																.replace(/\.?0+$/, "")
 														: "null"}
 												</span>
 											)}
@@ -337,7 +360,7 @@ export function SearchResults({
 									{result.types.map((type) => (
 										<div key={type.id} className="flex flex-col">
 											<span className="text-[10px] text-muted-foreground/70 font-sans">
-												{type.name || "Type"}
+												{resolveTypeName(type.id, type.name)}
 											</span>
 											<div className="flex items-center py-0.5">
 												{shortenId(type.id)}

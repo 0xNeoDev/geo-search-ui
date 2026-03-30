@@ -1,7 +1,13 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { searchEntities } from "@/lib/search-api";
-import type { BoostOverrides, SearchParams, SearchResponse, SearchScope } from "@/types";
+import type {
+	BoostOverrides,
+	ExcludeMode,
+	SearchParams,
+	SearchResponse,
+	SearchScope,
+} from "@/types";
 
 const PAGE_SIZE = 100;
 
@@ -10,6 +16,8 @@ export function useSearchEntities(
 	scope: SearchScope,
 	spaceId?: string,
 	typeIds?: string[],
+	excludeMode: ExcludeMode = "default",
+	excludeTypeIds?: string[],
 	page = 0,
 	boosts?: BoostOverrides,
 ) {
@@ -28,6 +36,8 @@ export function useSearchEntities(
 		scope,
 		spaceId?.trim(),
 		typeIds?.sort().join(",") ?? "",
+		excludeMode,
+		excludeTypeIds?.sort().join(",") ?? "",
 		apiUrl,
 		offset,
 		boostKey,
@@ -39,8 +49,12 @@ export function useSearchEntities(
 		scope,
 		limit: PAGE_SIZE,
 		offset,
+		excludeMode,
 		...(hasValidSpaceId && spaceId && { spaceId: spaceId.trim() }),
 		...(typeIds && typeIds.length > 0 && { typeIds }),
+		...(excludeMode === "custom" &&
+			excludeTypeIds &&
+			excludeTypeIds.length > 0 && { excludeTypeIds }),
 		...(boosts && Object.keys(boosts).length > 0 && { boosts }),
 	};
 

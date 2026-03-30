@@ -9,7 +9,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchEntities } from "@/hooks/useSearchEntities";
 import { useUrlParams } from "@/hooks/useUrlParams";
-import type { BoostOverrides, SearchResult, SearchScope } from "@/types";
+import type { BoostOverrides, ExcludeMode, SearchResult, SearchScope } from "@/types";
 import { ENTITY_TYPES } from "@/types";
 import { SearchResults } from "./SearchResults";
 
@@ -45,10 +45,19 @@ interface SearchBarProps {
 	scope: SearchScope;
 	spaceId?: string;
 	typeIds?: string[];
+	excludeMode?: ExcludeMode;
+	excludeTypeIds?: string[];
 	boosts?: BoostOverrides;
 }
 
-export function SearchBar({ scope, spaceId, typeIds, boosts }: SearchBarProps) {
+export function SearchBar({
+	scope,
+	spaceId,
+	typeIds,
+	excludeMode = "default",
+	excludeTypeIds,
+	boosts,
+}: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams();
 
 	// Initialize query and page from URL params (only on mount)
@@ -77,18 +86,30 @@ export function SearchBar({ scope, spaceId, typeIds, boosts }: SearchBarProps) {
 			isInitialMount.current = false;
 			// On initial mount, only update if we have a query to ensure it's in the URL
 			if (initialQueryRef.current) {
-				updateUrl({ query: debouncedQuery, scope, spaceId: spaceIdParam, page: page > 0 ? page : undefined });
+				updateUrl({
+					query: debouncedQuery,
+					scope,
+					spaceId: spaceIdParam,
+					page: page > 0 ? page : undefined,
+				});
 			}
 			return;
 		}
 		// After initial mount, update URL with all params
-		updateUrl({ query: debouncedQuery, scope, spaceId: spaceIdParam, page: page > 0 ? page : undefined });
+		updateUrl({
+			query: debouncedQuery,
+			scope,
+			spaceId: spaceIdParam,
+			page: page > 0 ? page : undefined,
+		});
 	}, [debouncedQuery, scope, spaceId, page, updateUrl]);
 
 	// Reset page when search parameters change
 	const boostKey = boosts ? JSON.stringify(boosts) : "";
-	const prevSearchKey = useRef(`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${boostKey}`);
-	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${boostKey}`;
+	const prevSearchKey = useRef(
+		`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${boostKey}`,
+	);
+	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${boostKey}`;
 	if (searchKey !== prevSearchKey.current) {
 		prevSearchKey.current = searchKey;
 		if (page !== 0) {
@@ -102,7 +123,16 @@ export function SearchBar({ scope, spaceId, typeIds, boosts }: SearchBarProps) {
 		isLoading,
 		error: queryError,
 		pageSize,
-	} = useSearchEntities(debouncedQuery, scope, spaceId, typeIds, page, boosts);
+	} = useSearchEntities(
+		debouncedQuery,
+		scope,
+		spaceId,
+		typeIds,
+		excludeMode,
+		excludeTypeIds,
+		page,
+		boosts,
+	);
 
 	// Show previous page data while new page loads (keepPreviousData)
 	const results: SearchResult[] = data?.results ?? [];
@@ -147,7 +177,10 @@ export function SearchBar({ scope, spaceId, typeIds, boosts }: SearchBarProps) {
 
 	const MAX_PAGES = 10;
 	const paginationTotal = stableTotal;
-	const totalPages = paginationTotal !== undefined ? Math.min(Math.ceil(paginationTotal / pageSize), MAX_PAGES) : 0;
+	const totalPages =
+		paginationTotal !== undefined
+			? Math.min(Math.ceil(paginationTotal / pageSize), MAX_PAGES)
+			: 0;
 	const hasNextPage = page + 1 < totalPages;
 	const hasPrevPage = page > 0;
 
@@ -221,7 +254,7 @@ export function SearchBar({ scope, spaceId, typeIds, boosts }: SearchBarProps) {
 
 			<div className="flex-1 min-h-0 mt-2">
 				<SearchResults
-					key={`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${page}`}
+					key={`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${page}`}
 					results={results}
 					isLoading={isLoading}
 					query={debouncedQuery}

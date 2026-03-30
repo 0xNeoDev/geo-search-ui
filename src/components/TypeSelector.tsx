@@ -90,7 +90,7 @@ export function TypeSelector({
 	return (
 		<div className="space-y-2">
 			<Label className="text-sm font-semibold">
-				Entity Types{" "}
+				Include Types{" "}
 				<span className="text-muted-foreground font-normal">(optional)</span>
 			</Label>
 			<Popover
