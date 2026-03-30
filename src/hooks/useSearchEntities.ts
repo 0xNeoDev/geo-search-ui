@@ -18,6 +18,7 @@ export function useSearchEntities(
 	typeIds?: string[],
 	excludeMode: ExcludeMode = "default",
 	excludeTypeIds?: string[],
+	includeNonCanonical = false,
 	page = 0,
 	boosts?: BoostOverrides,
 ) {
@@ -38,6 +39,7 @@ export function useSearchEntities(
 		typeIds?.sort().join(",") ?? "",
 		excludeMode,
 		excludeTypeIds?.sort().join(",") ?? "",
+		includeNonCanonical,
 		apiUrl,
 		offset,
 		boostKey,
@@ -55,6 +57,7 @@ export function useSearchEntities(
 		...(excludeMode === "custom" &&
 			excludeTypeIds &&
 			excludeTypeIds.length > 0 && { excludeTypeIds }),
+		...(includeNonCanonical && { includeNonCanonical }),
 		...(boosts && Object.keys(boosts).length > 0 && { boosts }),
 	};
 

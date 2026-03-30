@@ -47,6 +47,7 @@ interface SearchBarProps {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
+	includeNonCanonical?: boolean;
 	boosts?: BoostOverrides;
 }
 
@@ -56,6 +57,7 @@ export function SearchBar({
 	typeIds,
 	excludeMode = "default",
 	excludeTypeIds,
+	includeNonCanonical = false,
 	boosts,
 }: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams();
@@ -107,9 +109,9 @@ export function SearchBar({
 	// Reset page when search parameters change
 	const boostKey = boosts ? JSON.stringify(boosts) : "";
 	const prevSearchKey = useRef(
-		`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${boostKey}`,
+		`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${includeNonCanonical}-${boostKey}`,
 	);
-	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${boostKey}`;
+	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${includeNonCanonical}-${boostKey}`;
 	if (searchKey !== prevSearchKey.current) {
 		prevSearchKey.current = searchKey;
 		if (page !== 0) {
@@ -130,6 +132,7 @@ export function SearchBar({
 		typeIds,
 		excludeMode,
 		excludeTypeIds,
+		includeNonCanonical,
 		page,
 		boosts,
 	);

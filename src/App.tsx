@@ -59,6 +59,10 @@ function App() {
 		const params = getUrlParams();
 		return params.boosts || {};
 	});
+	const [includeNonCanonical, setIncludeNonCanonical] = useState(() => {
+		const params = getUrlParams();
+		return params.includeNonCanonical || false;
+	});
 	const [optionsOpen, setOptionsOpen] = useState(false);
 
 	// Track if this is the initial mount to avoid clearing URL params
@@ -86,10 +90,11 @@ function App() {
 			typeIds,
 			excludeMode,
 			excludeTypeIds: excludeMode === "custom" ? excludeTypeIds : undefined,
+			includeNonCanonical,
 			apiUrl: apiUrlParam,
 			boosts,
 		});
-	}, [scope, spaceId, typeIds, excludeMode, excludeTypeIds, apiUrl, boosts, updateUrl]);
+	}, [scope, spaceId, typeIds, excludeMode, excludeTypeIds, includeNonCanonical, apiUrl, boosts, updateUrl]);
 
 	// Get display-friendly API host for the summary
 	const getApiHost = (url: string) => {
@@ -169,6 +174,8 @@ function App() {
 										onExcludeModeChange={setExcludeMode}
 										excludeTypeIds={excludeTypeIds}
 										onExcludeTypeIdsChange={setExcludeTypeIds}
+										includeNonCanonical={includeNonCanonical}
+										onIncludeNonCanonicalChange={setIncludeNonCanonical}
 									/>
 									<div className="pt-4 mt-4 border-t">
 										<BoostControls boosts={boosts} onBoostsChange={setBoosts} />
@@ -198,6 +205,7 @@ function App() {
 									typeIds={typeIds}
 									excludeMode={excludeMode}
 									excludeTypeIds={excludeTypeIds}
+									includeNonCanonical={includeNonCanonical}
 									boosts={Object.keys(boosts).length > 0 ? boosts : undefined}
 								/>
 							</CardContent>
@@ -230,6 +238,8 @@ function App() {
 									onExcludeModeChange={setExcludeMode}
 									excludeTypeIds={excludeTypeIds}
 									onExcludeTypeIdsChange={setExcludeTypeIds}
+									includeNonCanonical={includeNonCanonical}
+									onIncludeNonCanonicalChange={setIncludeNonCanonical}
 								/>
 
 								<div className="pt-6 mt-6 border-t">

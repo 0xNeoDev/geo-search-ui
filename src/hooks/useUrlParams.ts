@@ -11,6 +11,7 @@ interface UrlParams {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
+	includeNonCanonical?: boolean;
 	apiUrl?: string;
 	page?: number;
 	boosts?: BoostOverrides;
@@ -74,6 +75,14 @@ export function useUrlParams() {
 			}
 		}
 
+		if ("includeNonCanonical" in params) {
+			if (params.includeNonCanonical) {
+				url.searchParams.set("includeNonCanonical", "true");
+			} else {
+				url.searchParams.delete("includeNonCanonical");
+			}
+		}
+
 		if ("apiUrl" in params) {
 			if (params.apiUrl?.trim()) {
 				url.searchParams.set("apiUrl", params.apiUrl.trim());
@@ -129,6 +138,8 @@ export function useUrlParams() {
 			}
 		}
 
+		const includeNonCanonical = params.get("includeNonCanonical") === "true";
+
 		return {
 			query: params.get("query") || undefined,
 			scope: (params.get("scope") as SearchScope) || undefined,
@@ -136,6 +147,7 @@ export function useUrlParams() {
 			typeIds: typeIds.length > 0 ? typeIds : undefined,
 			excludeMode: excludeMode || undefined,
 			excludeTypeIds: excludeTypeIds.length > 0 ? excludeTypeIds : undefined,
+			includeNonCanonical: includeNonCanonical || undefined,
 			apiUrl: params.get("apiUrl") || undefined,
 			page: page && page > 0 ? page : undefined,
 			boosts: Object.keys(boosts).length > 0 ? boosts : undefined,
