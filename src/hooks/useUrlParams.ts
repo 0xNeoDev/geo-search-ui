@@ -1,5 +1,8 @@
 import { useCallback } from "react";
-import type { ExcludeMode, SearchScope } from "@/types";
+import type { BoostOverrides, ExcludeMode, SearchScope } from "@/types";
+import { BOOST_DEFAULTS } from "@/types";
+
+const BOOST_KEYS = Object.keys(BOOST_DEFAULTS) as (keyof BoostOverrides)[];
 
 interface UrlParams {
 	query?: string;
@@ -10,6 +13,7 @@ interface UrlParams {
 	excludeTypeIds?: string[];
 	apiUrl?: string;
 	page?: number;
+	boosts?: BoostOverrides;
 }
 
 export function useUrlParams() {
@@ -86,6 +90,22 @@ export function useUrlParams() {
 			}
 		}
 
+		if ("boosts" in params) {
+			// Clear all boost params first
+			for (const key of BOOST_KEYS) {
+				url.searchParams.delete(key);
+			}
+			// Set only overridden values
+			if (params.boosts) {
+				for (const key of BOOST_KEYS) {
+					const val = params.boosts[key];
+					if (val !== undefined) {
+						url.searchParams.set(key, String(val));
+					}
+				}
+			}
+		}
+
 		// Update URL without page reload
 		window.history.replaceState({}, "", url.toString());
 	}, []);
@@ -97,6 +117,18 @@ export function useUrlParams() {
 		const excludeMode = params.get("excludeMode") as ExcludeMode | null;
 		const pageStr = params.get("page");
 		const page = pageStr ? Number.parseInt(pageStr, 10) : undefined;
+		// Parse boost overrides from URL
+		const boosts: BoostOverrides = {};
+		for (const key of BOOST_KEYS) {
+			const raw = params.get(key);
+			if (raw !== null) {
+				const val = Number.parseFloat(raw);
+				if (!Number.isNaN(val) && val >= 0) {
+					boosts[key] = val;
+				}
+			}
+		}
+
 		return {
 			query: params.get("query") || undefined,
 			scope: (params.get("scope") as SearchScope) || undefined,
@@ -106,6 +138,7 @@ export function useUrlParams() {
 			excludeTypeIds: excludeTypeIds.length > 0 ? excludeTypeIds : undefined,
 			apiUrl: params.get("apiUrl") || undefined,
 			page: page && page > 0 ? page : undefined,
+			boosts: Object.keys(boosts).length > 0 ? boosts : undefined,
 		};
 	}, []);
 

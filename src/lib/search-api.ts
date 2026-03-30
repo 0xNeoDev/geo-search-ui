@@ -13,6 +13,7 @@ export async function searchEntities(
 		excludeTypeIds,
 		limit,
 		offset,
+		boosts,
 	} = params;
 
 	const searchParams = new URLSearchParams({
@@ -48,6 +49,15 @@ export async function searchEntities(
 		searchParams.append("exclude_type_ids", excludeTypeIds.join(","));
 	}
 	// "default" or undefined: omit the parameter entirely, server applies defaults
+
+	// Append boost overrides
+	if (boosts) {
+		for (const [key, value] of Object.entries(boosts)) {
+			if (value !== undefined) {
+				searchParams.append(key, String(value));
+			}
+		}
+	}
 
 	// Ensure apiUrl doesn't have trailing slashes
 	const cleanApiUrl = apiUrl.trim().replace(/\/+$/, "");

@@ -9,7 +9,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchEntities } from "@/hooks/useSearchEntities";
 import { useUrlParams } from "@/hooks/useUrlParams";
-import type { ExcludeMode, SearchResult, SearchScope } from "@/types";
+import type { BoostOverrides, ExcludeMode, SearchResult, SearchScope } from "@/types";
 import { ENTITY_TYPES } from "@/types";
 import { SearchResults } from "./SearchResults";
 
@@ -47,6 +47,7 @@ interface SearchBarProps {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
+	boosts?: BoostOverrides;
 }
 
 export function SearchBar({
@@ -55,6 +56,7 @@ export function SearchBar({
 	typeIds,
 	excludeMode = "default",
 	excludeTypeIds,
+	boosts,
 }: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams();
 
@@ -103,10 +105,11 @@ export function SearchBar({
 	}, [debouncedQuery, scope, spaceId, page, updateUrl]);
 
 	// Reset page when search parameters change
+	const boostKey = boosts ? JSON.stringify(boosts) : "";
 	const prevSearchKey = useRef(
-		`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}`,
+		`${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${boostKey}`,
 	);
-	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}`;
+	const searchKey = `${debouncedQuery}-${scope}-${spaceId ?? ""}-${typeIds?.join(",") ?? ""}-${excludeMode}-${excludeTypeIds?.join(",") ?? ""}-${boostKey}`;
 	if (searchKey !== prevSearchKey.current) {
 		prevSearchKey.current = searchKey;
 		if (page !== 0) {
@@ -128,6 +131,7 @@ export function SearchBar({
 		excludeMode,
 		excludeTypeIds,
 		page,
+		boosts,
 	);
 
 	// Show previous page data while new page loads (keepPreviousData)

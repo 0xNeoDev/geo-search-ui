@@ -1,6 +1,7 @@
 import { ChevronDown, Github, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ApiUrlSelector } from "@/components/ApiUrlSelector";
+import { BoostControls } from "@/components/BoostControls";
 import { ScopeSelector } from "@/components/ScopeSelector";
 import { formatTypeFilters, SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/collapsible";
 import { DEFAULT_API_URL, useApiUrl } from "@/hooks/useApiUrl";
 import { useUrlParams } from "@/hooks/useUrlParams";
-import type { ExcludeMode } from "@/types";
+import type { BoostOverrides, ExcludeMode } from "@/types";
 import { SearchScope } from "@/types";
 
 const scopeLabels: Record<SearchScope, string> = {
@@ -54,6 +55,10 @@ function App() {
 		const params = getUrlParams();
 		return params.excludeTypeIds || [];
 	});
+	const [boosts, setBoosts] = useState<BoostOverrides>(() => {
+		const params = getUrlParams();
+		return params.boosts || {};
+	});
 	const [optionsOpen, setOptionsOpen] = useState(false);
 
 	// Track if this is the initial mount to avoid clearing URL params
@@ -74,7 +79,7 @@ function App() {
 		// Only include apiUrl in URL when it differs from the default
 		const apiUrlParam = apiUrl !== DEFAULT_API_URL ? apiUrl : undefined;
 
-		// Update scope, spaceId, typeIds, excludeMode, excludeTypeIds, and apiUrl, preserve query
+		// Update scope, spaceId, typeIds, excludeMode, excludeTypeIds, boosts, and apiUrl, preserve query
 		updateUrl({
 			scope,
 			spaceId: spaceIdParam,
@@ -82,8 +87,9 @@ function App() {
 			excludeMode,
 			excludeTypeIds: excludeMode === "custom" ? excludeTypeIds : undefined,
 			apiUrl: apiUrlParam,
+			boosts,
 		});
-	}, [scope, spaceId, typeIds, excludeMode, excludeTypeIds, apiUrl, updateUrl]);
+	}, [scope, spaceId, typeIds, excludeMode, excludeTypeIds, apiUrl, boosts, updateUrl]);
 
 	// Get display-friendly API host for the summary
 	const getApiHost = (url: string) => {
@@ -165,6 +171,9 @@ function App() {
 										onExcludeTypeIdsChange={setExcludeTypeIds}
 									/>
 									<div className="pt-4 mt-4 border-t">
+										<BoostControls boosts={boosts} onBoostsChange={setBoosts} />
+									</div>
+									<div className="pt-4 mt-4 border-t">
 										<ApiUrlSelector />
 									</div>
 								</CardContent>
@@ -189,6 +198,7 @@ function App() {
 									typeIds={typeIds}
 									excludeMode={excludeMode}
 									excludeTypeIds={excludeTypeIds}
+									boosts={Object.keys(boosts).length > 0 ? boosts : undefined}
 								/>
 							</CardContent>
 						</Card>
@@ -222,6 +232,9 @@ function App() {
 									onExcludeTypeIdsChange={setExcludeTypeIds}
 								/>
 
+								<div className="pt-6 mt-6 border-t">
+									<BoostControls boosts={boosts} onBoostsChange={setBoosts} />
+								</div>
 								<div className="pt-6 mt-6 border-t">
 									<ApiUrlSelector />
 								</div>

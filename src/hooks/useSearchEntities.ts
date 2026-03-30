@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { searchEntities } from "@/lib/search-api";
 import type {
+	BoostOverrides,
 	ExcludeMode,
 	SearchParams,
 	SearchResponse,
@@ -18,6 +19,7 @@ export function useSearchEntities(
 	excludeMode: ExcludeMode = "default",
 	excludeTypeIds?: string[],
 	page = 0,
+	boosts?: BoostOverrides,
 ) {
 	const { apiUrl } = useApiUrl();
 	const needsSpaceId = scope === "SPACE" || scope === "SPACE_SINGLE";
@@ -27,6 +29,7 @@ export function useSearchEntities(
 
 	// Build query key that includes all search parameters AND the API URL
 	// When API URL changes, TanStack Query will automatically refetch
+	const boostKey = boosts ? JSON.stringify(boosts) : "";
 	const queryKey = [
 		"search",
 		query.trim(),
@@ -37,6 +40,7 @@ export function useSearchEntities(
 		excludeTypeIds?.sort().join(",") ?? "",
 		apiUrl,
 		offset,
+		boostKey,
 	];
 
 	// Build params
@@ -51,6 +55,7 @@ export function useSearchEntities(
 		...(excludeMode === "custom" &&
 			excludeTypeIds &&
 			excludeTypeIds.length > 0 && { excludeTypeIds }),
+		...(boosts && Object.keys(boosts).length > 0 && { boosts }),
 	};
 
 	const result = useQuery<SearchResponse>({
