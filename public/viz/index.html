@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaia Search Scoring — Score Composition Heatmaps</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-alt: #21242f;
+    --border: #2a2d3a;
+    --text: #e4e6ef;
+    --text-muted: #8b8fa3;
+    --accent: #6c72cb;
+    --accent-light: #a0a4e8;
+    --teal: #30968b;
+    --gold: #d4a843;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 48px 40px;
+    min-height: 100vh;
+  }
+
+  .header {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .header .subtitle-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 820px;
+  }
+
+  .formula-row {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .formula-box {
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    color: var(--accent-light);
+  }
+
+  .formula-box .label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Explainer section */
+  .explainer {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .explainer h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .explainer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 900px) {
+    .explainer-grid { grid-template-columns: 1fr; }
+  }
+
+  .explainer-card {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .explainer-card h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .explainer-card .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-zscore { background: rgba(108,114,203,0.2); color: var(--accent-light); }
+  .badge-decay { background: rgba(48,150,139,0.2); color: #5cccc2; }
+  .badge-weighted { background: rgba(212,168,67,0.2); color: var(--gold); }
+
+  .explainer-card p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  .explainer-card .range {
+    margin-top: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--accent-light);
+    padding: 6px 10px;
+    background: rgba(15,17,23,0.4);
+    border-radius: 6px;
+  }
+
+  .explainer-card .range .dim { color: var(--text-muted); }
+
+  .pipeline {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(15,17,23,0.3);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+
+  .pipeline .step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pipeline .arrow {
+    color: var(--border);
+    margin: 0 4px;
+    font-size: 14px;
+  }
+
+  .pipeline code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--accent-light);
+    font-size: 11px;
+    background: rgba(108,114,203,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* Constants bar */
+  .constants-bar {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .constant-chip {
+    padding: 7px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .constant-chip .val {
+    color: var(--accent-light);
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* Heatmap sections */
+  .grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .heatmap-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    overflow-x: auto;
+  }
+
+  .heatmap-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .heatmap-section .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .heatmap-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .axis-label-y {
+    position: absolute;
+    left: -44px;
+    top: 50%;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .axis-label-x {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  table.heatmap {
+    border-collapse: separate;
+    border-spacing: 2px;
+    margin-left: 48px;
+  }
+
+  table.heatmap th {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 6px 4px;
+    text-align: center;
+    min-width: 56px;
+  }
+
+  table.heatmap th.row-header {
+    text-align: right;
+    padding-right: 12px;
+    min-width: 44px;
+  }
+
+  table.heatmap td {
+    width: 56px;
+    height: 42px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: default;
+    position: relative;
+  }
+
+  table.heatmap td:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    margin-left: 48px;
+  }
+
+  .legend-bar {
+    width: 240px;
+    height: 12px;
+    border-radius: 6px;
+  }
+
+  .legend-label {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .insight-box {
+    margin-top: 20px;
+    margin-left: 48px;
+    padding: 12px 16px;
+    background: rgba(108, 114, 203, 0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 700px;
+  }
+
+  .insight-box strong { color: var(--text); }
+
+  /* Scenario table */
+  .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  .breakdown-table th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .breakdown-table td {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(42,45,58,0.5);
+    color: var(--text);
+  }
+
+  .breakdown-table td.mono {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--accent-light);
+  }
+
+  .bar-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Gaia Search Scoring — Final Score Composition</h1>
+  <p class="subtitle-text">
+    How OpenSearch BM25 text relevance and scoring-service field boosts combine to produce the final ranking.
+    OpenSearch 2.17.1 with default BM25 (k1=1.2, b=0.75).
+  </p>
+  <div class="formula-row">
+    <div class="formula-box">
+      <span class="label">With text query (boost_mode: "sum")</span>
+      Final = BM25_TextMatch + (max(score_field, -10) + 10) &times; 1.3
+    </div>
+    <div class="formula-box">
+      <span class="label">Empty query (boost_mode: "replace")</span>
+      Final = (max(score_field, -10) + 10) &times; 1.3
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- EXPLAINER: What the score fields actually are -->
+<!-- ================================================================ -->
+<div class="explainer">
+  <h2>What Are the Score Fields?</h2>
+  <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6">
+    Three score fields are computed by the <strong style="color:var(--text)">scoring-service</strong> (Python cronjob)
+    from onchain vote data, then published to Kafka and written to OpenSearch by the search-indexer.
+    The OpenSearch query layer then applies clamping, shifting, and a 1.3&times; multiplier inside a
+    <code>script_score</code> function before adding it to the BM25 text relevance score.
+  </p>
+
+  <div class="explainer-grid">
+    <!-- entity_global_score -->
+    <div class="explainer-card">
+      <h3>entity_global_score <span class="badge badge-zscore">z-score</span></h3>
+      <p>
+        <strong>What it measures:</strong> How popular/reputable an entity is <em>across all spaces</em>.<br><br>
+        <strong>How it's computed:</strong> Raw score = sum of all perspective scores (weighted upvotes &minus; weighted downvotes)
+        across every space the entity appears in. Then <strong>z-score normalized</strong>: <code>(raw &minus; mean) / stddev</code>
+        across all entities.
+      </p>
+      <div class="range">
+        <span class="dim">Typical:</span> -3 to +3 &nbsp;|&nbsp; <span class="dim">Clamped at:</span> -10
+      </div>
+      <p style="margin-top:8px">
+        <strong>Used by scope:</strong> <code>GLOBAL</code><br>
+        A z=+3 entity is 3 standard deviations more popular than average.
+      </p>
+    </div>
+
+    <!-- space_score -->
+    <div class="explainer-card">
+      <h3>space_score <span class="badge badge-decay">decay</span></h3>
+      <p>
+        <strong>What it measures:</strong> How "close to root" a space is in the space hierarchy.<br><br>
+        <strong>How it's computed:</strong> <code>0.8 ^ distance_to_root</code>. Pure exponential decay based on graph distance.
+        Root space = 1.0, one hop = 0.8, two hops = 0.64, etc. Disconnected spaces use depth 11 &asymp; 0.086.
+        <strong>Not z-score normalized</strong> — it's already bounded [0, 1].
+      </p>
+      <div class="range">
+        <span class="dim">Range:</span> 0.086 to 1.0 &nbsp;|&nbsp; <span class="dim">Root:</span> 1.0
+      </div>
+      <p style="margin-top:8px">
+        <strong>Used by scope:</strong> <code>GLOBAL_BY_SPACE_SCORE</code><br>
+        Ranks entities by the authority of their space, not individual popularity.
+      </p>
+    </div>
+
+    <!-- entity_space_score -->
+    <div class="explainer-card">
+      <h3>entity_space_score <span class="badge badge-weighted">weighted</span></h3>
+      <p>
+        <strong>What it measures:</strong> How popular an entity is <em>within a specific space</em>.<br><br>
+        <strong>How it's computed:</strong> Per-space perspective score (upvotes &minus; downvotes in that space),
+        z-score normalized <em>within the space</em>, then weighted by the space's own score:
+        <code>z_normalized &times; space_score</code>.
+      </p>
+      <div class="range">
+        <span class="dim">Typical:</span> -3 to +3 &nbsp;|&nbsp; <span class="dim">Clamped at:</span> -10
+      </div>
+      <p style="margin-top:8px">
+        <strong>Used by scope:</strong> <code>SPACE_SINGLE</code>, <code>SPACE</code><br>
+        An entity highly voted in a root-level space scores higher than one in a distant subspace.
+      </p>
+    </div>
+  </div>
+
+  <div class="pipeline">
+    <strong style="color:var(--text)">Scoring Pipeline:</strong><br>
+    <span class="step">Onchain votes</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">scoring-service <code>raw_score = &Sigma;(upvotes - downvotes)</code></span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">z-score normalize <code>(raw - &mu;) / &sigma;</code></span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">Kafka <code>curation.scores</code></span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">search-indexer &rarr; OpenSearch</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">Query-time: <code>clamp &rarr; shift +10 &rarr; &times;1.3 &rarr; add to BM25</code></span>
+  </div>
+</div>
+
+<!-- Constants bar -->
+<div class="constants-bar">
+  <div class="constant-chip">SCORE_BOOST <span class="val">1.3</span></div>
+  <div class="constant-chip">MIN_SCORE_THRESHOLD <span class="val">-10.0</span></div>
+  <div class="constant-chip">SCORE_SHIFT <span class="val">10.0</span></div>
+  <div class="constant-chip">NAME_PREFIX_BOOST <span class="val">2.0&times;</span></div>
+  <div class="constant-chip">DESC_PREFIX_BOOST <span class="val">1.5&times;</span></div>
+  <div class="constant-chip">NAME_FIELD_BOOST <span class="val">1.5&times;</span></div>
+  <div class="constant-chip">FUZZY_REDUCTION <span class="val">0.6&times;</span></div>
+  <div class="constant-chip">BM25 k1 <span class="val">1.2</span></div>
+  <div class="constant-chip">BM25 b <span class="val">0.75</span></div>
+  <div class="constant-chip">SPACE_DECAY_BASE <span class="val">0.8</span></div>
+</div>
+
+<div class="grid">
+
+<!-- ================================================================ -->
+<!-- HEATMAP 1: Main Final Score Matrix (z-score fields) -->
+<!-- ================================================================ -->
+<div class="heatmap-section">
+  <h2>Final Score Matrix — entity_global_score / entity_space_score</h2>
+  <div class="subtitle">
+    BM25 text match (rows) vs z-score field value (columns). These fields use z-score normalization
+    (mean=0, stddev=1). Cell = final composite score. Most entities cluster in the z = [-2, +2] range.
+  </div>
+  <div class="heatmap-container" style="padding-left: 48px;">
+    <div class="axis-label-y">BM25 Text Match Score</div>
+    <table class="heatmap" id="mainHeatmap"></table>
+    <div class="axis-label-x">Score Field (z-score normalized)</div>
+  </div>
+  <div class="legend" id="mainLegend"></div>
+  <div class="insight-box">
+    <strong>Reading this map:</strong> Find your BM25 text match score on the left, the entity's z-score on top.
+    The cell shows the final ranking score. For example, a BM25 of 10 with a z=+2 entity yields a
+    final score of <strong>25.6</strong>. The score boost adds a fixed band of <strong>9.1 to 16.9</strong>
+    across the typical z-score range [-3, +3], meaning ~10 points separate the least and most popular entities
+    regardless of text relevance.
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- HEATMAP 2: Space Score (non-z-score, decay-based) -->
+<!-- ================================================================ -->
+<div class="heatmap-section">
+  <h2>Final Score Matrix — space_score (GLOBAL_BY_SPACE_SCORE scope)</h2>
+  <div class="subtitle">
+    BM25 text match (rows) vs space_score (columns). Unlike the z-score fields, space_score is
+    <strong>not z-score normalized</strong> — it's <code>0.8^distance</code>, bounded [0, 1].
+    This means the boost contribution range is much narrower.
+  </div>
+  <div class="heatmap-container" style="padding-left: 48px;">
+    <div class="axis-label-y">BM25 Text Match Score</div>
+    <table class="heatmap" id="spaceScoreHeatmap"></table>
+    <div class="axis-label-x">space_score (0.8^distance_to_root)</div>
+  </div>
+  <div class="legend" id="spaceScoreLegend"></div>
+  <div class="insight-box">
+    <strong>Narrow boost band:</strong> Since space_score is always [0, 1], the boost contribution only ranges
+    from <strong>13.0</strong> (score=0) to <strong>14.3</strong> (score=1) — a mere 1.3 points.
+    This means <strong>space_score barely affects ranking when text matches exist</strong>.
+    Text relevance almost entirely determines order in this scope.
+    Only for empty queries (where BM25=0) does the space hierarchy meaningfully differentiate results.
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- HEATMAP 3: Score Boost Contribution (all three fields) -->
+<!-- ================================================================ -->
+<div class="heatmap-section">
+  <h2>Score Boost Contribution — All Three Fields Compared</h2>
+  <div class="subtitle">
+    The additive contribution from <code>script_score</code> alone: <code>(max(score, -10) + 10) &times; 1.3</code>.
+    For empty queries (<code>boost_mode: "replace"</code>), this IS the entire final score.
+  </div>
+  <div class="heatmap-container" style="padding-left: 48px;">
+    <table class="heatmap" id="boostCompareHeatmap"></table>
+  </div>
+  <div class="legend" id="boostCompareLegend"></div>
+  <div class="insight-box">
+    <strong>The space_score problem:</strong> For empty queries, a root-space entity (space_score=1.0) scores 14.3
+    while a 5-hop-deep entity scores 13.4 — only a 6% difference for 5 levels of hierarchy. Compare to
+    entity_global_score where a z=+3 entity scores 16.9 vs z=-3 at 9.1 — an 86% difference.
+    <strong>Space score has very low discriminating power through the boost formula.</strong>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- HEATMAP 4: Text Match Strategy Breakdown -->
+<!-- ================================================================ -->
+<div class="heatmap-section">
+  <h2>BM25 Text Match — Strategy Contribution Heatmap</h2>
+  <div class="subtitle">
+    Estimated BM25 scores per matching strategy by match quality. Uses BM25 formula with k1=1.2, b=0.75,
+    typical field lengths (name ~3 tokens, description ~20 tokens), moderate IDF.<br>
+    These are <strong>additive</strong> — a query matching multiple strategies sums their contributions.
+  </div>
+  <div class="heatmap-container" style="padding-left: 48px;">
+    <table class="heatmap" id="strategyHeatmap"></table>
+  </div>
+  <div class="legend" id="strategyLegend"></div>
+  <div class="insight-box">
+    <strong>Why name matches dominate:</strong> BM25 field-length normalization penalizes long fields.
+    A 3-token name gets much higher per-token BM25 than a 20-token description.
+    Combined with the 2.0&times; name prefix boost, an exact name prefix can outscore a description match by 4-6&times;.
+    The 0.6&times; fuzzy penalty ensures typo-tolerant matches rank below exact matches.
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- HEATMAP 5: Ranking Reversal Risk -->
+<!-- ================================================================ -->
+<div class="heatmap-section">
+  <h2>Ranking Reversal Risk Map (z-score fields)</h2>
+  <div class="subtitle">
+    When a high-z-score entity with a weaker text match outranks a low-z-score entity with a stronger text match.
+    Each cell = the BM25 advantage the low-z entity needs to maintain its rank.
+  </div>
+  <div class="heatmap-container" style="padding-left: 48px;">
+    <div class="axis-label-y">Low-z Entity</div>
+    <table class="heatmap" id="reversalHeatmap"></table>
+    <div class="axis-label-x">High-z Entity</div>
+  </div>
+  <div class="legend" id="reversalLegend"></div>
+  <div class="insight-box">
+    <strong>Practical impact:</strong> A z=+3 entity needs only ~10 fewer BM25 points than a z=-3 entity
+    to still outrank it. A popular entity with a partial name match can beat an unpopular entity
+    with an exact match — which is typically desired for discovery search.
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SCENARIO TABLE -->
+<!-- ================================================================ -->
+<div class="heatmap-section">
+  <h2>Real-World Scoring Scenarios</h2>
+  <div class="subtitle">
+    Concrete examples showing how different query/entity combinations produce final scores.
+    Scope indicates which score field is used.
+  </div>
+  <table class="breakdown-table" id="scenarioTable">
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Scope</th>
+        <th>Score Field</th>
+        <th>Est. BM25</th>
+        <th>Field Value</th>
+        <th>Boost</th>
+        <th>Final</th>
+        <th style="width:150px">Composition</th>
+      </tr>
+    </thead>
+    <tbody id="scenarioBody"></tbody>
+  </table>
+</div>
+
+</div><!-- /grid -->
+
+<script>
+// ============================================================
+// CONSTANTS (from opensearch.ts + scoring-service)
+// ============================================================
+const SCORE_BOOST = 1.3;
+const MIN_SCORE_THRESHOLD = -10.0;
+const SCORE_SHIFT = 10.0;
+const NAME_PREFIX_BOOST = 2.0;
+const DESCRIPTION_PREFIX_BOOST = 1.5;
+const NAME_FIELD_BOOST = 1.5;
+const FUZZY_REDUCTION_BOOST = 0.6;
+const BM25_K1 = 1.2;
+const BM25_B = 0.75;
+const SPACE_DECAY_BASE = 0.8;
+
+// ============================================================
+// SCORING FUNCTIONS
+// ============================================================
+function scoreBoost(fieldValue) {
+  const clamped = Math.max(fieldValue, MIN_SCORE_THRESHOLD);
+  return (clamped + SCORE_SHIFT) * SCORE_BOOST;
+}
+
+function finalScore(textMatch, fieldValue) {
+  return textMatch + scoreBoost(fieldValue);
+}
+
+function spaceScore(distance) {
+  return Math.pow(SPACE_DECAY_BASE, distance);
+}
+
+function approxBM25(tf, dl, avgdl, idf) {
+  return idf * (tf * (BM25_K1 + 1)) / (tf + BM25_K1 * (1 - BM25_B + BM25_B * (dl / avgdl)));
+}
+
+// ============================================================
+// COLOR SCALES
+// ============================================================
+const MAIN_PALETTE = [
+  [26, 20, 56], [44, 36, 105], [55, 65, 145], [38, 110, 160],
+  [30, 150, 155], [50, 180, 120], [130, 200, 80], [210, 200, 60],
+  [250, 230, 140], [255, 250, 220],
+];
+
+const REVERSAL_PALETTE = [
+  [20, 26, 48], [30, 55, 100], [50, 90, 140], [80, 130, 170],
+  [120, 165, 190], [170, 200, 210], [210, 180, 140], [230, 150, 90],
+  [235, 110, 60], [220, 60, 45],
+];
+
+function interpolateColor(t, palette) {
+  t = Math.max(0, Math.min(1, t));
+  const idx = t * (palette.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.min(lo + 1, palette.length - 1);
+  const frac = idx - lo;
+  const r = Math.round(palette[lo][0] + (palette[hi][0] - palette[lo][0]) * frac);
+  const g = Math.round(palette[lo][1] + (palette[hi][1] - palette[lo][1]) * frac);
+  const b = Math.round(palette[lo][2] + (palette[hi][2] - palette[lo][2]) * frac);
+  return `rgb(${r},${g},${b})`;
+}
+
+function cellColor(t, palette) {
+  t = Math.max(0, Math.min(1, t));
+  const idx = t * (palette.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.min(lo + 1, palette.length - 1);
+  const frac = idx - lo;
+  const r = Math.round(palette[lo][0] + (palette[hi][0] - palette[lo][0]) * frac);
+  const g = Math.round(palette[lo][1] + (palette[hi][1] - palette[lo][1]) * frac);
+  const b = Math.round(palette[lo][2] + (palette[hi][2] - palette[lo][2]) * frac);
+  const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+  return { bg: `rgb(${r},${g},${b})`, fg: lum > 150 ? 'rgba(15,17,23,0.85)' : 'rgba(228,230,239,0.9)' };
+}
+
+function buildLegend(containerId, minVal, maxVal, palette, label) {
+  const container = document.getElementById(containerId);
+  const stops = [];
+  for (let i = 0; i < 20; i++) stops.push(interpolateColor(i / 19, palette));
+  container.innerHTML = `
+    <span class="legend-label">${minVal.toFixed(1)}</span>
+    <div class="legend-bar" style="background: linear-gradient(to right, ${stops.join(', ')})"></div>
+    <span class="legend-label">${maxVal.toFixed(1)}</span>
+    ${label ? `<span class="legend-label" style="margin-left:8px; font-style:italic">${label}</span>` : ''}
+  `;
+}
+
+// ============================================================
+// HEATMAP 1: Main z-score matrix
+// ============================================================
+(function() {
+  const table = document.getElementById('mainHeatmap');
+  const zScores = [-10, -5, -3, -2, -1, 0, 1, 2, 3, 5, 8];
+  const textScores = [0, 1, 2, 5, 8, 12, 18, 25, 35, 50];
+
+  const allVals = [];
+  textScores.forEach(ts => zScores.forEach(z => allVals.push(finalScore(ts, z))));
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+
+  let html = '<tr><th class="row-header"></th>';
+  zScores.forEach(z => html += `<th>${z >= 0 ? '+' : ''}${z}</th>`);
+  html += '</tr>';
+  table.innerHTML = html;
+
+  textScores.forEach(ts => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<th class="row-header">${ts}</th>`;
+    zScores.forEach(z => {
+      const val = finalScore(ts, z);
+      const t = (val - minV) / (maxV - minV);
+      const { bg, fg } = cellColor(t, MAIN_PALETTE);
+      const td = document.createElement('td');
+      td.style.background = bg; td.style.color = fg;
+      td.textContent = val.toFixed(1);
+      td.title = `BM25: ${ts} | z: ${z} | Boost: ${scoreBoost(z).toFixed(1)} | Final: ${val.toFixed(1)}`;
+      row.appendChild(td);
+    });
+    table.appendChild(row);
+  });
+  buildLegend('mainLegend', minV, maxV, MAIN_PALETTE);
+})();
+
+// ============================================================
+// HEATMAP 2: Space score matrix
+// ============================================================
+(function() {
+  const table = document.getElementById('spaceScoreHeatmap');
+  const distances = [0, 1, 2, 3, 4, 5, 7, 10, 11];
+  const spaceScores = distances.map(d => ({ d, s: spaceScore(d) }));
+  const textScores = [0, 1, 2, 5, 8, 12, 18, 25, 35, 50];
+
+  const allVals = [];
+  textScores.forEach(ts => spaceScores.forEach(({ s }) => allVals.push(finalScore(ts, s))));
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+
+  let html = '<tr><th class="row-header"></th>';
+  spaceScores.forEach(({ d, s }) => html += `<th style="font-size:10px">d=${d}<br><span style="color:var(--accent-light)">${s.toFixed(2)}</span></th>`);
+  html += '</tr>';
+  table.innerHTML = html;
+
+  textScores.forEach(ts => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<th class="row-header">${ts}</th>`;
+    spaceScores.forEach(({ d, s }) => {
+      const val = finalScore(ts, s);
+      const t = (val - minV) / (maxV - minV);
+      const { bg, fg } = cellColor(t, MAIN_PALETTE);
+      const td = document.createElement('td');
+      td.style.background = bg; td.style.color = fg;
+      td.textContent = val.toFixed(1);
+      td.title = `BM25: ${ts} | distance: ${d} | space_score: ${s.toFixed(3)} | Boost: ${scoreBoost(s).toFixed(1)} | Final: ${val.toFixed(1)}`;
+      row.appendChild(td);
+    });
+    table.appendChild(row);
+  });
+  buildLegend('spaceScoreLegend', minV, maxV, MAIN_PALETTE);
+})();
+
+// ============================================================
+// HEATMAP 3: Boost comparison (all three fields)
+// ============================================================
+(function() {
+  const table = document.getElementById('boostCompareHeatmap');
+
+  // z-score values for entity_global_score and entity_space_score
+  const zVals = [-3, -2, -1, 0, 1, 2, 3];
+  // space_score values (by distance)
+  const spDists = [0, 1, 2, 3, 5, 10, 11];
+
+  const allBoosts = [];
+  zVals.forEach(z => allBoosts.push(scoreBoost(z)));
+  spDists.forEach(d => allBoosts.push(scoreBoost(spaceScore(d))));
+  const minV = Math.min(...allBoosts), maxV = Math.max(...allBoosts);
+
+  // Header
+  let html = '<tr><th class="row-header" style="text-align:left; min-width:180px">Field</th>';
+  // We'll use a unified column set showing the input value and boost
+  const cols = [
+    ...zVals.map(z => ({ label: `z=${z >= 0 ? '+' : ''}${z}`, val: z, type: 'z' })),
+  ];
+  cols.forEach(c => html += `<th>${c.label}</th>`);
+  html += '</tr>';
+  table.innerHTML = html;
+
+  // Row 1: entity_global_score
+  const row1 = document.createElement('tr');
+  row1.innerHTML = '<th class="row-header" style="text-align:left; font-size:11px">entity_global_score</th>';
+  zVals.forEach(z => {
+    const val = scoreBoost(z);
+    const t = (val - minV) / (maxV - minV);
+    const { bg, fg } = cellColor(t, MAIN_PALETTE);
+    const td = document.createElement('td');
+    td.style.background = bg; td.style.color = fg;
+    td.textContent = val.toFixed(1);
+    row1.appendChild(td);
+  });
+  table.appendChild(row1);
+
+  // Row 2: entity_space_score (same formula, same values)
+  const row2 = document.createElement('tr');
+  row2.innerHTML = '<th class="row-header" style="text-align:left; font-size:11px">entity_space_score</th>';
+  zVals.forEach(z => {
+    const val = scoreBoost(z);
+    const t = (val - minV) / (maxV - minV);
+    const { bg, fg } = cellColor(t, MAIN_PALETTE);
+    const td = document.createElement('td');
+    td.style.background = bg; td.style.color = fg;
+    td.textContent = val.toFixed(1);
+    row2.appendChild(td);
+  });
+  table.appendChild(row2);
+
+  // Row 3: space_score mapped to same columns for comparison
+  // space_score ranges 0-1, so we show what the boost looks like at equivalent "positions"
+  const row3 = document.createElement('tr');
+  row3.innerHTML = '<th class="row-header" style="text-align:left; font-size:11px">space_score<br><span style="font-size:9px;color:var(--text-muted)">d=0,1,2,3,5,7,11</span></th>';
+  const spDistForCols = [0, 1, 2, 3, 5, 7, 11];
+  spDistForCols.forEach(d => {
+    const ss = spaceScore(d);
+    const val = scoreBoost(ss);
+    const t = (val - minV) / (maxV - minV);
+    const { bg, fg } = cellColor(t, MAIN_PALETTE);
+    const td = document.createElement('td');
+    td.style.background = bg; td.style.color = fg;
+    td.innerHTML = `${val.toFixed(1)}<br><span style="font-size:9px;opacity:0.7">(${ss.toFixed(2)})</span>`;
+    td.title = `distance=${d}, space_score=${ss.toFixed(3)}, boost=${val.toFixed(1)}`;
+    row3.appendChild(td);
+  });
+  table.appendChild(row3);
+
+  buildLegend('boostCompareLegend', minV, maxV, MAIN_PALETTE);
+})();
+
+// ============================================================
+// HEATMAP 4: Strategy Contribution
+// ============================================================
+(function() {
+  const table = document.getElementById('strategyHeatmap');
+
+  const strategies = [
+    { name: 'Name Prefix (2.0&times;)', boost: NAME_PREFIX_BOOST, isName: true },
+    { name: 'Name N-gram (1.5&times;)', boost: NAME_FIELD_BOOST, isName: true },
+    { name: 'Desc Prefix (1.5&times;)', boost: DESCRIPTION_PREFIX_BOOST, isName: false },
+    { name: 'Desc N-gram (1.0&times;)', boost: 1.0, isName: false },
+    { name: 'Fuzzy Name (0.6&times;)', boost: FUZZY_REDUCTION_BOOST, isName: true },
+    { name: 'Fuzzy Desc (0.6&times;)', boost: FUZZY_REDUCTION_BOOST, isName: false },
+  ];
+
+  const qualities = [
+    { label: 'No match', tf: 0 },
+    { label: '1-gram', tf: 0.3 },
+    { label: 'Partial', tf: 0.6 },
+    { label: 'Single term', tf: 1 },
+    { label: 'Multi term', tf: 2 },
+    { label: 'Exact phrase', tf: 3 },
+  ];
+
+  const allVals = [];
+  const grid = strategies.map(strat => {
+    return qualities.map(q => {
+      if (q.tf === 0) return 0;
+      const dl = strat.isName ? 3 : 20;
+      const idf = strat.isName ? 3.5 : 3.0;
+      const val = approxBM25(q.tf, dl, dl, idf) * strat.boost;
+      allVals.push(val);
+      return val;
+    });
+  });
+  const maxV = Math.max(...allVals);
+
+  let html = '<tr><th class="row-header" style="min-width:150px; text-align:left">Strategy</th>';
+  qualities.forEach(q => html += `<th style="min-width:64px">${q.label}</th>`);
+  html += '</tr>';
+  table.innerHTML = html;
+
+  strategies.forEach((strat, i) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<th class="row-header" style="text-align:left; font-size:11px">${strat.name}</th>`;
+    grid[i].forEach(val => {
+      const t = maxV > 0 ? val / maxV : 0;
+      const { bg, fg } = cellColor(t, MAIN_PALETTE);
+      const td = document.createElement('td');
+      td.style.background = bg; td.style.color = fg;
+      td.textContent = val.toFixed(1);
+      row.appendChild(td);
+    });
+    table.appendChild(row);
+  });
+  buildLegend('strategyLegend', 0, maxV, MAIN_PALETTE);
+})();
+
+// ============================================================
+// HEATMAP 5: Ranking Reversal
+// ============================================================
+(function() {
+  const table = document.getElementById('reversalHeatmap');
+  const zScores = [-3, -2, -1, 0, 1, 2, 3, 5];
+
+  const allPos = [];
+  const grid = zScores.map(zLow =>
+    zScores.map(zHigh => {
+      const diff = scoreBoost(zHigh) - scoreBoost(zLow);
+      if (diff > 0) allPos.push(diff);
+      return diff;
+    })
+  );
+  const maxV = Math.max(...allPos);
+
+  let html = '<tr><th class="row-header"></th>';
+  zScores.forEach(z => html += `<th>${z >= 0 ? '+' : ''}${z}</th>`);
+  html += '</tr>';
+  table.innerHTML = html;
+
+  grid.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<th class="row-header">${zScores[i] >= 0 ? '+' : ''}${zScores[i]}</th>`;
+    row.forEach(val => {
+      const td = document.createElement('td');
+      if (val <= 0) {
+        td.style.background = 'rgba(26,29,39,0.6)';
+        td.style.color = 'rgba(139,143,163,0.3)';
+        td.textContent = '\u2014';
+      } else {
+        const t = val / maxV;
+        const { bg, fg } = cellColor(t, REVERSAL_PALETTE);
+        td.style.background = bg; td.style.color = fg;
+        td.textContent = '+' + val.toFixed(1);
+      }
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+  buildLegend('reversalLegend', 0, maxV, REVERSAL_PALETTE, 'BM25 advantage needed');
+})();
+
+// ============================================================
+// SCENARIO TABLE
+// ============================================================
+(function() {
+  const scenarios = [
+    { name: 'Exact name prefix, popular entity', scope: 'GLOBAL', field: 'entity_global_score', bm25: 14, fv: 2.5, fvLabel: 'z=+2.5' },
+    { name: 'Exact name prefix, new entity', scope: 'GLOBAL', field: 'entity_global_score', bm25: 14, fv: -1, fvLabel: 'z=-1' },
+    { name: 'Partial name, very popular', scope: 'GLOBAL', field: 'entity_global_score', bm25: 5, fv: 3, fvLabel: 'z=+3' },
+    { name: 'Description-only match', scope: 'GLOBAL', field: 'entity_global_score', bm25: 4, fv: 0, fvLabel: 'z=0' },
+    { name: 'Fuzzy match only', scope: 'GLOBAL', field: 'entity_global_score', bm25: 2, fv: 0, fvLabel: 'z=0' },
+    { name: 'Name match, root space', scope: 'GLOBAL_BY_SPACE_SCORE', field: 'space_score', bm25: 12, fv: 1.0, fvLabel: 'd=0 (1.0)' },
+    { name: 'Name match, deep subspace', scope: 'GLOBAL_BY_SPACE_SCORE', field: 'space_score', bm25: 12, fv: spaceScore(5), fvLabel: 'd=5 (0.33)' },
+    { name: 'Space search, top entity', scope: 'SPACE_SINGLE', field: 'entity_space_score', bm25: 10, fv: 2, fvLabel: 'z=+2' },
+    { name: 'Empty query, top global', scope: 'GLOBAL', field: 'entity_global_score', bm25: 0, fv: 3, fvLabel: 'z=+3' },
+    { name: 'Empty query, average', scope: 'GLOBAL', field: 'entity_global_score', bm25: 0, fv: 0, fvLabel: 'z=0' },
+    { name: 'Empty query, root space', scope: 'GLOBAL_BY_SPACE_SCORE', field: 'space_score', bm25: 0, fv: 1.0, fvLabel: 'd=0 (1.0)' },
+    { name: 'Empty query, distant space', scope: 'GLOBAL_BY_SPACE_SCORE', field: 'space_score', bm25: 0, fv: spaceScore(10), fvLabel: 'd=10 (0.11)' },
+  ];
+
+  const tbody = document.getElementById('scenarioBody');
+  const maxFinal = Math.max(...scenarios.map(s => finalScore(s.bm25, s.fv)));
+
+  scenarios.forEach(s => {
+    const boost = scoreBoost(s.fv);
+    const total = s.bm25 + boost;
+    const bm25Pct = total > 0 ? (s.bm25 / total * 100) : 0;
+    const boostPct = total > 0 ? (boost / total * 100) : 0;
+    const barWidth = total / maxFinal * 140;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-size:12px; max-width:200px">${s.name}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${s.scope}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${s.field}</td>
+      <td class="mono">${s.bm25.toFixed(1)}</td>
+      <td class="mono">${s.fvLabel}</td>
+      <td class="mono">${boost.toFixed(1)}</td>
+      <td class="mono" style="font-weight:700">${total.toFixed(1)}</td>
+      <td>
+        <div class="bar-cell">
+          <div style="display:flex; border-radius:3px; overflow:hidden; height:8px; width:${barWidth}px">
+            <div style="width:${bm25Pct}%; background:#6c72cb; height:100%"></div>
+            <div style="width:${boostPct}%; background:#30968b; height:100%"></div>
+          </div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const legendRow = document.createElement('tr');
+  legendRow.innerHTML = `
+    <td colspan="8" style="padding-top:12px; font-size:11px; color:var(--text-muted)">
+      <span style="display:inline-block; width:12px; height:8px; background:#6c72cb; border-radius:2px; vertical-align:middle"></span> BM25 text match
+      &nbsp;&nbsp;
+      <span style="display:inline-block; width:12px; height:8px; background:#30968b; border-radius:2px; vertical-align:middle"></span> Score field boost
+    </td>
+  `;
+  tbody.appendChild(legendRow);
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- INTERACTIVE 2D / 3D SCATTER PLOT SECTION -->
+<!-- ================================================================ -->
+<style>
+  .plot-section {
+    max-width: 1200px;
+    margin: 48px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .plot-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .plot-section .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .plot-controls {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: flex-end;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .control-group label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+  }
+
+  .control-group select,
+  .control-group input[type="range"] {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    min-width: 180px;
+    cursor: pointer;
+  }
+
+  .control-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .control-group input[type="range"] {
+    padding: 8px 4px;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    cursor: pointer;
+  }
+
+  .control-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--surface);
+  }
+
+  .slider-value {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent-light);
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .view-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .view-tab {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .view-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .view-tab:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .canvas-container {
+    position: relative;
+    background: rgba(15, 17, 23, 0.5);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .canvas-container canvas {
+    display: block;
+    cursor: crosshair;
+  }
+
+  .plot-tooltip {
+    position: absolute;
+    display: none;
+    padding: 8px 12px;
+    background: rgba(26, 29, 39, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 100;
+    line-height: 1.6;
+    backdrop-filter: blur(8px);
+    max-width: 240px;
+  }
+
+  .plot-tooltip .tt-label {
+    color: var(--text-muted);
+  }
+
+  .plot-tooltip .tt-val {
+    color: var(--accent-light);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .plot-stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .stat-item .stat-val {
+    color: var(--accent-light);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-weight: 600;
+  }
+
+  .drag-hint {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 10px;
+    color: rgba(139, 143, 163, 0.5);
+    pointer-events: none;
+  }
+
+  .reseed-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .reseed-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+</style>
+
+<div class="plot-section">
+  <h2>Interactive Score Explorer — 100 Simulated Entities</h2>
+  <div class="subtitle">
+    Each dot represents a hypothetical entity with randomized scoring parameters but a fixed BM25 text match.
+    The Y-axis is always the final composite score. Choose which parameters to plot on X and Z axes.
+    In 3D mode, drag to rotate.
+  </div>
+
+  <div class="view-tabs">
+    <div class="view-tab active" data-view="2d" onclick="switchView('2d')">2D Scatter</div>
+    <div class="view-tab" data-view="3d" onclick="switchView('3d')">3D Scatter</div>
+  </div>
+
+  <div class="plot-controls">
+    <div class="control-group">
+      <label>X Axis</label>
+      <select id="xAxis" onchange="regeneratePlot()">
+        <option value="z_score" selected>entity_global_score (z-score)</option>
+        <option value="space_score">space_score (0.8^distance)</option>
+        <option value="entity_space_score">entity_space_score (z-score)</option>
+        <option value="name_prefix">Name Prefix Contribution</option>
+        <option value="desc_prefix">Desc Prefix Contribution</option>
+        <option value="ngram">N-gram Contribution</option>
+        <option value="fuzzy">Fuzzy Match Contribution</option>
+        <option value="total_text">Total Text Match (BM25)</option>
+        <option value="score_boost_value">Score Boost Output</option>
+      </select>
+    </div>
+
+    <div class="control-group" id="zAxisGroup" style="display:none">
+      <label>Z Axis</label>
+      <select id="zAxis" onchange="regeneratePlot()">
+        <option value="z_score">entity_global_score (z-score)</option>
+        <option value="space_score">space_score (0.8^distance)</option>
+        <option value="entity_space_score" selected>entity_space_score (z-score)</option>
+        <option value="name_prefix">Name Prefix Contribution</option>
+        <option value="desc_prefix">Desc Prefix Contribution</option>
+        <option value="ngram">N-gram Contribution</option>
+        <option value="fuzzy">Fuzzy Match Contribution</option>
+        <option value="total_text">Total Text Match (BM25)</option>
+        <option value="score_boost_value">Score Boost Output</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Scope (Score Field Used)</label>
+      <select id="scopeSelect" onchange="regeneratePlot()">
+        <option value="GLOBAL" selected>GLOBAL (entity_global_score)</option>
+        <option value="GLOBAL_BY_SPACE_SCORE">GLOBAL_BY_SPACE_SCORE (space_score)</option>
+        <option value="SPACE_SINGLE">SPACE_SINGLE (entity_space_score)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Fixed BM25 Text Match</label>
+      <div class="slider-row">
+        <input type="range" id="fixedBM25" min="0" max="50" value="10" step="1" oninput="updateBM25Label(); regeneratePlot()">
+        <span class="slider-value" id="bm25Label">10</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Sample Count</label>
+      <div class="slider-row">
+        <input type="range" id="sampleCount" min="20" max="300" value="100" step="10" oninput="updateSampleLabel(); regeneratePlot()">
+        <span class="slider-value" id="sampleLabel">100</span>
+      </div>
+    </div>
+
+    <button class="reseed-btn" onclick="reseed()">Reseed Random</button>
+  </div>
+
+  <div class="canvas-container" id="canvasContainer">
+    <canvas id="plotCanvas" width="1120" height="600"></canvas>
+    <div class="plot-tooltip" id="plotTooltip"></div>
+    <div class="drag-hint" id="dragHint" style="display:none">Drag to rotate</div>
+  </div>
+
+  <div class="plot-stats" id="plotStats"></div>
+</div>
+
+<script>
+(function() {
+  // ============================================================
+  // STATE
+  // ============================================================
+  let currentView = '2d';
+  let samples = [];
+  let seed = 42;
+  let rotX = -0.4;
+  let rotZ = 0.6;
+  let isDragging = false;
+  let dragStartX = 0, dragStartY = 0;
+  let dragStartRotX = 0, dragStartRotZ = 0;
+  let hoveredIdx = -1;
+
+  const canvas = document.getElementById('plotCanvas');
+  const ctx = canvas.getContext('2d');
+  const tooltip = document.getElementById('plotTooltip');
+  const container = document.getElementById('canvasContainer');
+
+  // Constants
+  const SCORE_BOOST = 1.3;
+  const MIN_SCORE_THRESHOLD = -10.0;
+  const SCORE_SHIFT = 10.0;
+  const NAME_PREFIX_BOOST = 2.0;
+  const DESCRIPTION_PREFIX_BOOST = 1.5;
+  const NAME_FIELD_BOOST = 1.5;
+  const FUZZY_REDUCTION_BOOST = 0.6;
+  const BM25_K1 = 1.2;
+  const BM25_B = 0.75;
+  const SPACE_DECAY_BASE = 0.8;
+
+  // ============================================================
+  // SEEDED RANDOM (xorshift128)
+  // ============================================================
+  let rngState = [0,0,0,0];
+
+  function seedRng(s) {
+    rngState[0] = s | 0;
+    rngState[1] = (s * 1103515245 + 12345) | 0;
+    rngState[2] = (s * 214013 + 2531011) | 0;
+    rngState[3] = (s * 16807) | 0;
+    for (let i = 0; i < 20; i++) rand(); // warm up
+  }
+
+  function rand() {
+    let t = rngState[3];
+    let s = rngState[0];
+    rngState[3] = rngState[2];
+    rngState[2] = rngState[1];
+    rngState[1] = s;
+    t ^= t << 11;
+    t ^= t >>> 8;
+    rngState[0] = t ^ s ^ (s >>> 19);
+    return (rngState[0] >>> 0) / 4294967296;
+  }
+
+  function randNormal(mean, std) {
+    // Box-Muller
+    const u1 = rand();
+    const u2 = rand();
+    return mean + std * Math.sqrt(-2 * Math.log(u1 || 0.0001)) * Math.cos(2 * Math.PI * u2);
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  // ============================================================
+  // SCORING
+  // ============================================================
+  function calcScoreBoost(fieldValue) {
+    const clamped = Math.max(fieldValue, MIN_SCORE_THRESHOLD);
+    return (clamped + SCORE_SHIFT) * SCORE_BOOST;
+  }
+
+  function approxBM25(tf, dl, avgdl, idf) {
+    if (tf <= 0) return 0;
+    return idf * (tf * (BM25_K1 + 1)) / (tf + BM25_K1 * (1 - BM25_B + BM25_B * (dl / avgdl)));
+  }
+
+  // ============================================================
+  // SAMPLE GENERATION
+  // ============================================================
+  function generateSamples() {
+    const count = parseInt(document.getElementById('sampleCount').value);
+    const fixedBM25 = parseFloat(document.getElementById('fixedBM25').value);
+
+    seedRng(seed);
+    samples = [];
+
+    for (let i = 0; i < count; i++) {
+      // Random score field values
+      const z_score = clamp(randNormal(0, 1.5), -5, 6);
+      const distance = Math.floor(rand() * 12); // 0-11
+      const space_score_val = Math.pow(SPACE_DECAY_BASE, distance);
+      const entity_space_score = clamp(randNormal(0, 1.2), -4, 5);
+
+      // Random text match strategy contributions
+      // Each strategy has a random "match quality" from 0 to 1
+      const nameMatchQuality = rand();
+      const descMatchQuality = rand();
+      const fuzzyQuality = rand() * 0.7; // fuzzy is less likely to be strong
+
+      // BM25 contributions per strategy (approximate)
+      const nameTf = nameMatchQuality > 0.3 ? nameMatchQuality * 3 : 0;
+      const descTf = descMatchQuality > 0.4 ? descMatchQuality * 2 : 0;
+
+      const name_prefix = approxBM25(nameTf, 3, 3, 3.5) * NAME_PREFIX_BOOST;
+      const desc_prefix = approxBM25(descTf, 20, 20, 3.0) * DESCRIPTION_PREFIX_BOOST;
+      const ngram = approxBM25(nameTf * 0.8, 3, 3, 3.5) * NAME_FIELD_BOOST
+                   + approxBM25(descTf * 0.6, 20, 20, 3.0);
+      const fuzzy = (approxBM25(fuzzyQuality * 2, 3, 3, 3.5)
+                   + approxBM25(fuzzyQuality * 1.5, 20, 20, 3.0)) * FUZZY_REDUCTION_BOOST;
+
+      const total_text = name_prefix + desc_prefix + ngram + fuzzy;
+
+      // Scale text contributions so they average around fixedBM25
+      // We keep the relative proportions but normalize to target
+      const textScale = total_text > 0 ? fixedBM25 / total_text : 0;
+      const scaled_name_prefix = name_prefix * textScale;
+      const scaled_desc_prefix = desc_prefix * textScale;
+      const scaled_ngram = ngram * textScale;
+      const scaled_fuzzy = fuzzy * textScale;
+
+      // Score boost depends on scope
+      const scope = document.getElementById('scopeSelect').value;
+      let activeFieldValue;
+      if (scope === 'GLOBAL') activeFieldValue = z_score;
+      else if (scope === 'GLOBAL_BY_SPACE_SCORE') activeFieldValue = space_score_val;
+      else activeFieldValue = entity_space_score;
+
+      const score_boost_value = calcScoreBoost(activeFieldValue);
+      const final_score = fixedBM25 + score_boost_value;
+
+      samples.push({
+        z_score,
+        space_score: space_score_val,
+        space_distance: distance,
+        entity_space_score,
+        name_prefix: scaled_name_prefix,
+        desc_prefix: scaled_desc_prefix,
+        ngram: scaled_ngram,
+        fuzzy: scaled_fuzzy,
+        total_text: fixedBM25,
+        score_boost_value,
+        final_score,
+        activeFieldValue,
+      });
+    }
+  }
+
+  // ============================================================
+  // AXIS HELPERS
+  // ============================================================
+  const AXIS_META = {
+    z_score: { label: 'entity_global_score (z-score)', unit: '', color: '#6c72cb' },
+    space_score: { label: 'space_score', unit: '', color: '#30968b' },
+    entity_space_score: { label: 'entity_space_score (z-score)', unit: '', color: '#d4a843' },
+    name_prefix: { label: 'Name Prefix Contribution', unit: 'pts', color: '#cb6c8a' },
+    desc_prefix: { label: 'Desc Prefix Contribution', unit: 'pts', color: '#8acb6c' },
+    ngram: { label: 'N-gram Contribution', unit: 'pts', color: '#6ccba8' },
+    fuzzy: { label: 'Fuzzy Contribution', unit: 'pts', color: '#cb9e6c' },
+    total_text: { label: 'Total Text Match', unit: 'pts', color: '#6caacb' },
+    score_boost_value: { label: 'Score Boost Output', unit: 'pts', color: '#a06ccb' },
+    final_score: { label: 'Final Score', unit: 'pts', color: '#e4e6ef' },
+  };
+
+  function getAxisValues(key) {
+    return samples.map(s => s[key]);
+  }
+
+  function getRange(values) {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const pad = (max - min) * 0.08 || 1;
+    return { min: min - pad, max: max + pad };
+  }
+
+  // ============================================================
+  // 2D RENDERING
+  // ============================================================
+  const PAD = { top: 40, right: 30, bottom: 50, left: 65 };
+
+  function render2D() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const xKey = document.getElementById('xAxis').value;
+    const xVals = getAxisValues(xKey);
+    const yVals = getAxisValues('final_score');
+    const xRange = getRange(xVals);
+    const yRange = getRange(yVals);
+
+    const plotW = W - PAD.left - PAD.right;
+    const plotH = H - PAD.top - PAD.bottom;
+
+    function toScreenX(v) { return PAD.left + ((v - xRange.min) / (xRange.max - xRange.min)) * plotW; }
+    function toScreenY(v) { return PAD.top + plotH - ((v - yRange.min) / (yRange.max - yRange.min)) * plotH; }
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(42, 45, 58, 0.6)';
+    ctx.lineWidth = 1;
+    const xTicks = niceScale(xRange.min, xRange.max, 8);
+    const yTicks = niceScale(yRange.min, yRange.max, 8);
+
+    ctx.setLineDash([2, 4]);
+    xTicks.forEach(v => {
+      const x = toScreenX(v);
+      ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, H - PAD.bottom); ctx.stroke();
+    });
+    yTicks.forEach(v => {
+      const y = toScreenY(v);
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Axis labels
+    ctx.fillStyle = 'rgba(139, 143, 163, 0.7)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    xTicks.forEach(v => {
+      ctx.fillText(v.toFixed(1), toScreenX(v), H - PAD.bottom + 16);
+    });
+    ctx.textAlign = 'right';
+    yTicks.forEach(v => {
+      ctx.fillText(v.toFixed(1), PAD.left - 8, toScreenY(v) + 3);
+    });
+
+    // Axis titles
+    ctx.fillStyle = 'rgba(139, 143, 163, 0.9)';
+    ctx.font = '600 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(AXIS_META[xKey].label, PAD.left + plotW / 2, H - 6);
+
+    ctx.save();
+    ctx.translate(14, PAD.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Final Score', 0, 0);
+    ctx.restore();
+
+    // Trend line (linear regression)
+    const n = xVals.length;
+    const xMean = xVals.reduce((a, b) => a + b, 0) / n;
+    const yMean = yVals.reduce((a, b) => a + b, 0) / n;
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) {
+      num += (xVals[i] - xMean) * (yVals[i] - yMean);
+      den += (xVals[i] - xMean) * (xVals[i] - xMean);
+    }
+    const slope = den > 0 ? num / den : 0;
+    const intercept = yMean - slope * xMean;
+
+    ctx.strokeStyle = 'rgba(160, 164, 232, 0.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(toScreenX(xRange.min), toScreenY(slope * xRange.min + intercept));
+    ctx.lineTo(toScreenX(xRange.max), toScreenY(slope * xRange.max + intercept));
+    ctx.stroke();
+
+    // Points (sorted by final_score so bright ones render on top)
+    const indices = samples.map((_, i) => i).sort((a, b) => samples[a].final_score - samples[b].final_score);
+
+    indices.forEach(i => {
+      const sx = toScreenX(xVals[i]);
+      const sy = toScreenY(yVals[i]);
+      const t = (yVals[i] - yRange.min) / (yRange.max - yRange.min);
+      const isHovered = i === hoveredIdx;
+
+      // Glow
+      if (isHovered) {
+        const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 24);
+        grad.addColorStop(0, 'rgba(160, 164, 232, 0.3)');
+        grad.addColorStop(1, 'rgba(160, 164, 232, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(sx, sy, 24, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Dot
+      const r = isHovered ? 7 : 5;
+      const hue = 240 + t * 80; // purple to teal
+      const sat = 50 + t * 30;
+      const lit = 40 + t * 30;
+      ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${isHovered ? 1 : 0.75})`;
+      ctx.strokeStyle = isHovered ? 'rgba(255,255,255,0.6)' : `hsla(${hue}, ${sat}%, ${lit + 20}%, 0.3)`;
+      ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    });
+
+    // Store screen positions for hit testing
+    samples.forEach((s, i) => {
+      s._sx = toScreenX(xVals[i]);
+      s._sy = toScreenY(yVals[i]);
+    });
+  }
+
+  function niceScale(min, max, targetTicks) {
+    const range = max - min;
+    const rawStep = range / targetTicks;
+    const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    let step;
+    if (rawStep / mag < 1.5) step = mag;
+    else if (rawStep / mag < 3.5) step = mag * 2;
+    else if (rawStep / mag < 7.5) step = mag * 5;
+    else step = mag * 10;
+
+    const ticks = [];
+    let v = Math.ceil(min / step) * step;
+    while (v <= max) {
+      ticks.push(v);
+      v += step;
+    }
+    return ticks;
+  }
+
+  // ============================================================
+  // 3D RENDERING
+  // ============================================================
+  function render3D() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const xKey = document.getElementById('xAxis').value;
+    const zKey = document.getElementById('zAxis').value;
+    const xVals = getAxisValues(xKey);
+    const yVals = getAxisValues('final_score');
+    const zVals = getAxisValues(zKey);
+    const xRange = getRange(xVals);
+    const yRange = getRange(yVals);
+    const zRange = getRange(zVals);
+
+    const cx = W / 2, cy = H / 2;
+    const scale = Math.min(W, H) * 0.32;
+
+    // Normalize to [-1, 1]
+    function norm(v, range) { return ((v - range.min) / (range.max - range.min)) * 2 - 1; }
+
+    // 3D rotation (Y-up)
+    function project(nx, ny, nz) {
+      // Rotate around Y axis (rotZ)
+      let x1 = nx * Math.cos(rotZ) - nz * Math.sin(rotZ);
+      let z1 = nx * Math.sin(rotZ) + nz * Math.cos(rotZ);
+      let y1 = ny;
+
+      // Rotate around X axis (rotX)
+      let y2 = y1 * Math.cos(rotX) - z1 * Math.sin(rotX);
+      let z2 = y1 * Math.sin(rotX) + z1 * Math.cos(rotX);
+      let x2 = x1;
+
+      // Perspective
+      const d = 4;
+      const pScale = d / (d + z2);
+
+      return {
+        sx: cx + x2 * scale * pScale,
+        sy: cy - y2 * scale * pScale,
+        depth: z2,
+      };
+    }
+
+    // Draw axes
+    const axisLines = [
+      { from: [-1,0,0], to: [1,0,0], label: AXIS_META[xKey].label, labelPos: [1.15,0,0] },
+      { from: [0,-1,0], to: [0,1,0], label: 'Final Score', labelPos: [0,1.15,0] },
+      { from: [0,0,-1], to: [0,0,1], label: AXIS_META[zKey].label, labelPos: [0,0,1.15] },
+    ];
+
+    ctx.strokeStyle = 'rgba(42, 45, 58, 0.8)';
+    ctx.lineWidth = 1;
+    axisLines.forEach(axis => {
+      const p1 = project(...axis.from);
+      const p2 = project(...axis.to);
+      ctx.beginPath(); ctx.moveTo(p1.sx, p1.sy); ctx.lineTo(p2.sx, p2.sy); ctx.stroke();
+
+      // Tick marks
+      for (let t = -1; t <= 1; t += 0.5) {
+        const isX = axis.from[1] === 0 && axis.from[2] === 0;
+        const isY = axis.from[0] === 0 && axis.from[2] === 0;
+        const pos = isX ? [t, 0, 0] : isY ? [0, t, 0] : [0, 0, t];
+        const p = project(...pos);
+        ctx.fillStyle = 'rgba(139, 143, 163, 0.5)';
+        ctx.beginPath(); ctx.arc(p.sx, p.sy, 2, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Axis label
+      const lp = project(...axis.labelPos);
+      ctx.fillStyle = 'rgba(139, 143, 163, 0.8)';
+      ctx.font = '500 10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(axis.label, lp.sx, lp.sy);
+    });
+
+    // Draw grid floor
+    ctx.strokeStyle = 'rgba(42, 45, 58, 0.3)';
+    ctx.lineWidth = 0.5;
+    for (let t = -1; t <= 1; t += 0.5) {
+      const p1 = project(t, -1, -1), p2 = project(t, -1, 1);
+      ctx.beginPath(); ctx.moveTo(p1.sx, p1.sy); ctx.lineTo(p2.sx, p2.sy); ctx.stroke();
+      const p3 = project(-1, -1, t), p4 = project(1, -1, t);
+      ctx.beginPath(); ctx.moveTo(p3.sx, p3.sy); ctx.lineTo(p4.sx, p4.sy); ctx.stroke();
+    }
+
+    // Project all points and sort by depth
+    const projected = samples.map((s, i) => {
+      const nx = norm(xVals[i], xRange);
+      const ny = norm(yVals[i], yRange);
+      const nz = norm(zVals[i], zRange);
+      const p = project(nx, ny, nz);
+      return { ...p, idx: i, ny };
+    });
+    projected.sort((a, b) => a.depth - b.depth);
+
+    // Draw shadow lines to floor
+    projected.forEach(({ sx, sy, idx, ny, depth }) => {
+      const nx = norm(xVals[idx], xRange);
+      const nz = norm(zVals[idx], zRange);
+      const floor = project(nx, -1, nz);
+      ctx.strokeStyle = `rgba(108, 114, 203, ${0.05 + 0.05 * (depth + 2)})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(floor.sx, floor.sy); ctx.stroke();
+    });
+
+    // Draw points
+    projected.forEach(({ sx, sy, idx, ny, depth }) => {
+      const t = (ny + 1) / 2;
+      const isHovered = idx === hoveredIdx;
+      const depthFade = clamp((depth + 2) / 4, 0.3, 1);
+
+      if (isHovered) {
+        const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 20);
+        grad.addColorStop(0, 'rgba(160, 164, 232, 0.4)');
+        grad.addColorStop(1, 'rgba(160, 164, 232, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(sx, sy, 20, 0, Math.PI * 2); ctx.fill();
+      }
+
+      const r = isHovered ? 6 : 3.5 + depthFade * 1.5;
+      const hue = 240 + t * 80;
+      const sat = 50 + t * 30;
+      const lit = 35 + t * 35;
+      ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${isHovered ? 1 : depthFade * 0.8})`;
+      ctx.strokeStyle = isHovered ? 'rgba(255,255,255,0.5)' : `hsla(${hue}, ${sat}%, ${lit + 20}%, ${depthFade * 0.2})`;
+      ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      samples[idx]._sx = sx;
+      samples[idx]._sy = sy;
+    });
+  }
+
+  // ============================================================
+  // STATS
+  // ============================================================
+  function updateStats() {
+    const finals = samples.map(s => s.final_score);
+    const mean = finals.reduce((a, b) => a + b, 0) / finals.length;
+    const std = Math.sqrt(finals.reduce((a, b) => a + (b - mean) ** 2, 0) / finals.length);
+    const min = Math.min(...finals);
+    const max = Math.max(...finals);
+    const spread = max - min;
+
+    const xKey = document.getElementById('xAxis').value;
+    const xVals = getAxisValues(xKey);
+    const xMin = Math.min(...xVals).toFixed(2);
+    const xMax = Math.max(...xVals).toFixed(2);
+
+    document.getElementById('plotStats').innerHTML = `
+      <div class="stat-item">Final Score: <span class="stat-val">${mean.toFixed(1)}</span> avg, <span class="stat-val">${std.toFixed(1)}</span> stddev</div>
+      <div class="stat-item">Range: <span class="stat-val">${min.toFixed(1)}</span> to <span class="stat-val">${max.toFixed(1)}</span> (spread: ${spread.toFixed(1)})</div>
+      <div class="stat-item">X range: <span class="stat-val">${xMin}</span> to <span class="stat-val">${xMax}</span></div>
+      <div class="stat-item">Samples: <span class="stat-val">${samples.length}</span></div>
+    `;
+  }
+
+  // ============================================================
+  // INTERACTION
+  // ============================================================
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    if (isDragging && currentView === '3d') {
+      const dx = (e.clientX - dragStartX) * 0.005;
+      const dy = (e.clientY - dragStartY) * 0.005;
+      rotZ = dragStartRotZ + dx;
+      rotX = clamp(dragStartRotX - dy, -Math.PI / 2 + 0.1, Math.PI / 2 - 0.1);
+      render();
+      return;
+    }
+
+    // Hit test
+    let closest = -1;
+    let closestDist = 15;
+    samples.forEach((s, i) => {
+      const dx = mx - (s._sx || 0);
+      const dy = my - (s._sy || 0);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = i;
+      }
+    });
+
+    if (closest !== hoveredIdx) {
+      hoveredIdx = closest;
+      render();
+    }
+
+    if (closest >= 0) {
+      const s = samples[closest];
+      const xKey = document.getElementById('xAxis').value;
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX - rect.left + 16) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+
+      let html = `<div><span class="tt-label">Final Score:</span> <span class="tt-val">${s.final_score.toFixed(2)}</span></div>`;
+      html += `<div><span class="tt-label">Text Match:</span> <span class="tt-val">${s.total_text.toFixed(1)}</span></div>`;
+      html += `<div><span class="tt-label">Score Boost:</span> <span class="tt-val">${s.score_boost_value.toFixed(2)}</span></div>`;
+      html += `<div style="border-top:1px solid rgba(42,45,58,0.8); margin:4px 0; padding-top:4px">`;
+      html += `<div><span class="tt-label">z-score (global):</span> <span class="tt-val">${s.z_score.toFixed(2)}</span></div>`;
+      html += `<div><span class="tt-label">space_score:</span> <span class="tt-val">${s.space_score.toFixed(3)}</span> <span class="tt-label">(d=${s.space_distance})</span></div>`;
+      html += `<div><span class="tt-label">z-score (space):</span> <span class="tt-val">${s.entity_space_score.toFixed(2)}</span></div>`;
+      html += `</div>`;
+      html += `<div style="border-top:1px solid rgba(42,45,58,0.8); margin:4px 0; padding-top:4px">`;
+      html += `<div><span class="tt-label">Name prefix:</span> <span class="tt-val">${s.name_prefix.toFixed(1)}</span></div>`;
+      html += `<div><span class="tt-label">Desc prefix:</span> <span class="tt-val">${s.desc_prefix.toFixed(1)}</span></div>`;
+      html += `<div><span class="tt-label">N-gram:</span> <span class="tt-val">${s.ngram.toFixed(1)}</span></div>`;
+      html += `<div><span class="tt-label">Fuzzy:</span> <span class="tt-val">${s.fuzzy.toFixed(1)}</span></div>`;
+      html += `</div>`;
+      tooltip.innerHTML = html;
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (currentView === '3d') {
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      dragStartRotX = rotX;
+      dragStartRotZ = rotZ;
+      canvas.style.cursor = 'grabbing';
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    canvas.style.cursor = currentView === '3d' ? 'grab' : 'crosshair';
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    isDragging = false;
+    hoveredIdx = -1;
+    tooltip.style.display = 'none';
+    canvas.style.cursor = currentView === '3d' ? 'grab' : 'crosshair';
+    render();
+  });
+
+  // ============================================================
+  // PUBLIC API
+  // ============================================================
+  function render() {
+    if (currentView === '2d') render2D();
+    else render3D();
+  }
+
+  window.switchView = function(view) {
+    currentView = view;
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+    document.getElementById('zAxisGroup').style.display = view === '3d' ? '' : 'none';
+    document.getElementById('dragHint').style.display = view === '3d' ? '' : 'none';
+    canvas.style.cursor = view === '3d' ? 'grab' : 'crosshair';
+    render();
+  };
+
+  window.regeneratePlot = function() {
+    generateSamples();
+    render();
+    updateStats();
+  };
+
+  window.updateBM25Label = function() {
+    document.getElementById('bm25Label').textContent = document.getElementById('fixedBM25').value;
+  };
+
+  window.updateSampleLabel = function() {
+    document.getElementById('sampleLabel').textContent = document.getElementById('sampleCount').value;
+  };
+
+  window.reseed = function() {
+    seed = Math.floor(Math.random() * 100000);
+    regeneratePlot();
+  };
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  // Handle high-DPI displays
+  function setupCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = container.getBoundingClientRect();
+    const w = Math.floor(rect.width);
+    const h = 600;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+    // Reset internal coordinate system for hit testing
+    canvas.width = w;
+    canvas.height = h;
+  }
+
+  setupCanvas();
+  generateSamples();
+  render();
+  updateStats();
+
+  window.addEventListener('resize', () => {
+    setupCanvas();
+    render();
+  });
+})();
+</script>
+
+</body>
+</html>

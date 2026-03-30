@@ -11,6 +11,7 @@ export async function searchEntities(
 		typeIds,
 		excludeMode,
 		excludeTypeIds,
+		includeNonCanonical,
 		limit,
 		offset,
 		boosts,
@@ -49,6 +50,10 @@ export async function searchEntities(
 		searchParams.append("exclude_type_ids", excludeTypeIds.join(","));
 	}
 	// "default" or undefined: omit the parameter entirely, server applies defaults
+
+	if (includeNonCanonical) {
+		searchParams.append("include_non_canonical", "true");
+	}
 
 	// Append boost overrides
 	if (boosts) {

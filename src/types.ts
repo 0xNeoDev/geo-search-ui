@@ -88,6 +88,7 @@ export interface SearchParams {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
+	includeNonCanonical?: boolean;
 	limit?: number;
 	offset?: number;
 	boosts?: BoostOverrides;

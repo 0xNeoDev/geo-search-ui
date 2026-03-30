@@ -26,6 +26,8 @@ interface ScopeSelectorProps {
 	onExcludeModeChange: (mode: ExcludeMode) => void;
 	excludeTypeIds: string[];
 	onExcludeTypeIdsChange: (ids: string[]) => void;
+	includeNonCanonical: boolean;
+	onIncludeNonCanonicalChange: (value: boolean) => void;
 }
 
 export function ScopeSelector({
@@ -39,6 +41,8 @@ export function ScopeSelector({
 	onExcludeModeChange,
 	excludeTypeIds,
 	onExcludeTypeIdsChange,
+	includeNonCanonical,
+	onIncludeNonCanonicalChange,
 }: ScopeSelectorProps) {
 	const scopes = [
 		{
@@ -247,6 +251,29 @@ export function ScopeSelector({
 					excludeTypeIds={excludeTypeIds}
 					onExcludeTypeIdsChange={onExcludeTypeIdsChange}
 				/>
+			</div>
+
+			<div className="pt-4 border-t">
+				<div className="flex items-start gap-2">
+					<Checkbox
+						id="include-non-canonical"
+						checked={includeNonCanonical}
+						onCheckedChange={(checked) =>
+							onIncludeNonCanonicalChange(checked === true)
+						}
+					/>
+					<div className="grid gap-1 leading-none">
+						<Label
+							htmlFor="include-non-canonical"
+							className="text-sm font-medium cursor-pointer"
+						>
+							Include non-canonical results
+						</Label>
+						<p className="text-xs text-muted-foreground">
+							Show entities from spaces outside the canonical trust graph
+						</p>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
