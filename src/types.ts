@@ -56,16 +56,18 @@ export interface BoostOverrides {
 	name_field_boost?: number;
 	name_exact_token_boost?: number;
 	name_raw_exact_boost?: number;
+	name_raw_case_insensitive_boost?: number;
 	fuzzy_reduction_boost?: number;
 }
 
 export const BOOST_DEFAULTS: Required<BoostOverrides> = {
-	score_boost: 20.0,
+	score_boost: 75.0,
 	name_prefix_boost: 5.0,
 	description_prefix_boost: 1.5,
 	name_field_boost: 1.5,
 	name_exact_token_boost: 8.0,
 	name_raw_exact_boost: 10.0,
+	name_raw_case_insensitive_boost: 5.0,
 	fuzzy_reduction_boost: 0.6,
 };
 
@@ -76,6 +78,7 @@ export const BOOST_LABELS: Record<keyof BoostOverrides, string> = {
 	name_field_boost: "Name Field",
 	name_exact_token_boost: "Name Exact Token",
 	name_raw_exact_boost: "Name Raw Exact",
+	name_raw_case_insensitive_boost: "Name Raw (CI)",
 	fuzzy_reduction_boost: "Fuzzy Reduction",
 };
 
