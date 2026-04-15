@@ -82,6 +82,52 @@ export const BOOST_LABELS: Record<keyof BoostOverrides, string> = {
 	fuzzy_reduction_boost: "Fuzzy Reduction",
 };
 
+export const BOOST_INFO: Record<
+	keyof BoostOverrides,
+	{ constant: string; description: string }
+> = {
+	score_boost: {
+		constant: "SCORE_BOOST",
+		description:
+			"Multiplier for popularity score fields (entity_space_score × space_score). Ensures popularity signals outrank text-match signals for tiebreaking.",
+	},
+	name_prefix_boost: {
+		constant: "NAME_PREFIX_BOOST",
+		description:
+			"Boost for match_phrase_prefix on name. Higher than description prefix to ensure name matches outscore description-only matches.",
+	},
+	description_prefix_boost: {
+		constant: "DESCRIPTION_PREFIX_BOOST",
+		description:
+			"Boost for match_phrase_prefix on description. Matches any word-start position in the description.",
+	},
+	name_field_boost: {
+		constant: "NAME_FIELD_BOOST",
+		description:
+			"Field-level boost for name in multi_match bool_prefix queries. Gives higher weight to name vs description matches.",
+	},
+	name_exact_token_boost: {
+		constant: "NAME_EXACT_TOKEN_BOOST",
+		description:
+			'Boost for exact analyzed token match on name. "geo" matches "Geo" but NOT "geojson". Ranks exact token matches above prefix/fuzzy.',
+	},
+	name_raw_exact_boost: {
+		constant: "NAME_RAW_EXACT_BOOST",
+		description:
+			'Case-sensitive term query on name_raw keyword field. "World affairs" matches exactly but not "world affairs".',
+	},
+	name_raw_case_insensitive_boost: {
+		constant: "NAME_RAW_CASE_INSENSITIVE_BOOST",
+		description:
+			'Case-insensitive term query on name_raw. "world affairs" matches "World Affairs" but not "world-affairs".',
+	},
+	fuzzy_reduction_boost: {
+		constant: "FUZZY_REDUCTION_BOOST",
+		description:
+			"Reduction factor for fuzzy text matches. Values < 1 reduce weight of fuzzy matches compared to exact/prefix.",
+	},
+};
+
 export type ExcludeMode = "default" | "none" | "custom";
 
 export interface SearchParams {

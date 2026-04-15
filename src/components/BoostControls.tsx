@@ -1,9 +1,6 @@
 import { RotateCcw } from "lucide-react";
-import {
-	BOOST_DEFAULTS,
-	BOOST_LABELS,
-	type BoostOverrides,
-} from "@/types";
+import { InfoPopover } from "@/components/ui/info-popover";
+import { BOOST_DEFAULTS, BOOST_INFO, BOOST_LABELS, type BoostOverrides } from "@/types";
 
 interface BoostControlsProps {
 	boosts: BoostOverrides;
@@ -63,9 +60,21 @@ export function BoostControls({ boosts, onBoostsChange }: BoostControlsProps) {
 						<div key={key} className="flex items-center gap-2">
 							<label
 								htmlFor={`boost-${key}`}
-								className="text-xs text-muted-foreground w-28 flex-shrink-0"
+								className="text-xs text-muted-foreground w-28 flex-shrink-0 flex items-center gap-1"
 							>
 								{BOOST_LABELS[key]}
+								<InfoPopover
+									label={`Info about ${BOOST_LABELS[key]}`}
+									side="right"
+									iconSize="h-3 w-3"
+								>
+									<p className="font-mono font-semibold mb-1">
+										{BOOST_INFO[key].constant}
+									</p>
+									<p className="text-muted-foreground">
+										{BOOST_INFO[key].description}
+									</p>
+								</InfoPopover>
 							</label>
 							<input
 								id={`boost-${key}`}

@@ -9,7 +9,12 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchEntities } from "@/hooks/useSearchEntities";
 import { useUrlParams } from "@/hooks/useUrlParams";
-import type { BoostOverrides, ExcludeMode, SearchResult, SearchScope } from "@/types";
+import type {
+	BoostOverrides,
+	ExcludeMode,
+	SearchResult,
+	SearchScope,
+} from "@/types";
 import { ENTITY_TYPES } from "@/types";
 import { SearchResults } from "./SearchResults";
 

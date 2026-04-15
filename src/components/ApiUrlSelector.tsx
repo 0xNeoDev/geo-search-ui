@@ -1,13 +1,8 @@
-import { Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InfoPopover } from "@/components/ui/info-popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useApiUrl } from "@/hooks/useApiUrl";
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -104,25 +99,9 @@ export function ApiUrlSelector() {
 								{preset.label}
 							</Label>
 							{preset.url && (
-								<Popover>
-									<PopoverTrigger asChild>
-										<button
-											type="button"
-											onClick={(e) => e.stopPropagation()}
-											className="p-1 hover:bg-accent rounded transition-colors"
-											aria-label={`Info about ${preset.label}`}
-										>
-											<Info className="h-3.5 w-3.5 text-muted-foreground" />
-										</button>
-									</PopoverTrigger>
-									<PopoverContent
-										className="w-auto text-xs p-2"
-										side="left"
-										align="center"
-									>
-										{preset.url}
-									</PopoverContent>
-								</Popover>
+								<InfoPopover label={`Info about ${preset.label}`}>
+									{preset.url}
+								</InfoPopover>
 							)}
 						</div>
 					</button>

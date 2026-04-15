@@ -94,7 +94,17 @@ function App() {
 			apiUrl: apiUrlParam,
 			boosts,
 		});
-	}, [scope, spaceId, typeIds, excludeMode, excludeTypeIds, includeNonCanonical, apiUrl, boosts, updateUrl]);
+	}, [
+		scope,
+		spaceId,
+		typeIds,
+		excludeMode,
+		excludeTypeIds,
+		includeNonCanonical,
+		apiUrl,
+		boosts,
+		updateUrl,
+	]);
 
 	// Get display-friendly API host for the summary
 	const getApiHost = (url: string) => {
