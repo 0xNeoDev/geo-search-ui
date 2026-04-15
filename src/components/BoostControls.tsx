@@ -1,6 +1,11 @@
 import { RotateCcw } from "lucide-react";
 import { InfoPopover } from "@/components/ui/info-popover";
-import { BOOST_DEFAULTS, BOOST_INFO, BOOST_LABELS, type BoostOverrides } from "@/types";
+import {
+	BOOST_DEFAULTS,
+	BOOST_INFO,
+	BOOST_LABELS,
+	type BoostOverrides,
+} from "@/types";
 
 interface BoostControlsProps {
 	boosts: BoostOverrides;
