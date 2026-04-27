@@ -26,8 +26,9 @@ interface ScopeSelectorProps {
 	onExcludeModeChange: (mode: ExcludeMode) => void;
 	excludeTypeIds: string[];
 	onExcludeTypeIdsChange: (ids: string[]) => void;
-	includeNonCanonical: boolean;
-	onIncludeNonCanonicalChange: (value: boolean) => void;
+	/** null = unset (server default), true = force include, false = canonical only. */
+	includeNonCanonical: boolean | null;
+	onIncludeNonCanonicalChange: (value: boolean | null) => void;
 }
 
 export function ScopeSelector({
@@ -254,24 +255,53 @@ export function ScopeSelector({
 			</div>
 
 			<div className="pt-4 border-t">
-				<div className="flex items-start gap-2">
-					<Checkbox
-						id="include-non-canonical"
-						checked={includeNonCanonical}
-						onCheckedChange={(checked) =>
-							onIncludeNonCanonicalChange(checked === true)
-						}
-					/>
-					<div className="grid gap-1 leading-none">
-						<Label
-							htmlFor="include-non-canonical"
-							className="text-sm font-medium cursor-pointer"
-						>
-							Include non-canonical results
-						</Label>
-						<p className="text-xs text-muted-foreground">
-							Show entities from spaces outside the canonical trust graph
-						</p>
+				<div className="grid gap-2">
+					<Label className="text-sm font-medium">Non-canonical results</Label>
+					<p className="text-xs text-muted-foreground">
+						Whether entities from spaces outside the canonical trust graph
+						appear in results.
+					</p>
+					<div className="inline-flex rounded-md border border-input p-0.5 bg-muted/30 w-fit">
+						{/* Label is provided by the visible heading above. */}
+						{(
+							[
+								{
+									value: null,
+									label: "Default",
+									title:
+										"Don't send the parameter — server default applies (currently includes non-canonical).",
+								},
+								{
+									value: true,
+									label: "Include",
+									title: "Force include_non_canonical=true.",
+								},
+								{
+									value: false,
+									label: "Exclude",
+									title:
+										"Force include_non_canonical=false (canonical spaces only).",
+								},
+							] as const
+						).map(({ value, label, title }) => {
+							const selected = includeNonCanonical === value;
+							return (
+								<button
+									key={String(value)}
+									type="button"
+									aria-pressed={selected}
+									title={title}
+									onClick={() => onIncludeNonCanonicalChange(value)}
+									className={`px-3 py-1 text-xs rounded-sm transition-colors ${
+										selected
+											? "bg-background shadow-sm font-medium"
+											: "text-muted-foreground hover:text-foreground"
+									}`}
+								>
+									{label}
+								</button>
+							);
+						})}
 					</div>
 				</div>
 			</div>

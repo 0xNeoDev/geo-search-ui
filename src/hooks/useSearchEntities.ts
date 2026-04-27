@@ -18,7 +18,7 @@ export function useSearchEntities(
 	typeIds?: string[],
 	excludeMode: ExcludeMode = "default",
 	excludeTypeIds?: string[],
-	includeNonCanonical = false,
+	includeNonCanonical: boolean | null = null,
 	page = 0,
 	boosts?: BoostOverrides,
 ) {
@@ -57,7 +57,9 @@ export function useSearchEntities(
 		...(excludeMode === "custom" &&
 			excludeTypeIds &&
 			excludeTypeIds.length > 0 && { excludeTypeIds }),
-		...(includeNonCanonical && { includeNonCanonical }),
+		// Pass through `true` and `false` distinctly; only omit on null/undefined.
+		...(includeNonCanonical !== null &&
+			includeNonCanonical !== undefined && { includeNonCanonical }),
 		...(boosts && Object.keys(boosts).length > 0 && { boosts }),
 	};
 

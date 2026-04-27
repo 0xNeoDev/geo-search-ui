@@ -59,9 +59,12 @@ function App() {
 		const params = getUrlParams();
 		return params.boosts || {};
 	});
-	const [includeNonCanonical, setIncludeNonCanonical] = useState(() => {
+	// Three-state: null = unset (default), true = force include, false = canonical only.
+	const [includeNonCanonical, setIncludeNonCanonical] = useState<
+		boolean | null
+	>(() => {
 		const params = getUrlParams();
-		return params.includeNonCanonical || false;
+		return params.includeNonCanonical ?? null;
 	});
 	const [optionsOpen, setOptionsOpen] = useState(false);
 

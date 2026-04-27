@@ -51,8 +51,14 @@ export async function searchEntities(
 	}
 	// "default" or undefined: omit the parameter entirely, server applies defaults
 
-	if (includeNonCanonical) {
+	// Three-state include_non_canonical:
+	//   null/undefined → omit the param, server applies its default
+	//   true → force include
+	//   false → canonical only
+	if (includeNonCanonical === true) {
 		searchParams.append("include_non_canonical", "true");
+	} else if (includeNonCanonical === false) {
+		searchParams.append("include_non_canonical", "false");
 	}
 
 	// Append boost overrides
