@@ -137,7 +137,14 @@ export interface SearchParams {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
-	includeNonCanonical?: boolean;
+	/**
+	 * Three-way:
+	 *   - `null` / `undefined` → don't send the param; server applies its
+	 *     default (currently `true`, i.e. all entities returned).
+	 *   - `true` → send `include_non_canonical=true` (force include).
+	 *   - `false` → send `include_non_canonical=false` (canonical only).
+	 */
+	includeNonCanonical?: boolean | null;
 	limit?: number;
 	offset?: number;
 	boosts?: BoostOverrides;

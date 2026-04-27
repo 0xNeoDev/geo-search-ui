@@ -52,7 +52,7 @@ interface SearchBarProps {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
-	includeNonCanonical?: boolean;
+	includeNonCanonical?: boolean | null;
 	boosts?: BoostOverrides;
 }
 
@@ -62,7 +62,7 @@ export function SearchBar({
 	typeIds,
 	excludeMode = "default",
 	excludeTypeIds,
-	includeNonCanonical = false,
+	includeNonCanonical = null,
 	boosts,
 }: SearchBarProps) {
 	const { updateUrl, getUrlParams } = useUrlParams();

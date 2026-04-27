@@ -11,7 +11,8 @@ interface UrlParams {
 	typeIds?: string[];
 	excludeMode?: ExcludeMode;
 	excludeTypeIds?: string[];
-	includeNonCanonical?: boolean;
+	/** null/undefined = unset, true = include, false = canonical-only. */
+	includeNonCanonical?: boolean | null;
 	apiUrl?: string;
 	page?: number;
 	boosts?: BoostOverrides;
@@ -76,8 +77,10 @@ export function useUrlParams() {
 		}
 
 		if ("includeNonCanonical" in params) {
-			if (params.includeNonCanonical) {
+			if (params.includeNonCanonical === true) {
 				url.searchParams.set("includeNonCanonical", "true");
+			} else if (params.includeNonCanonical === false) {
+				url.searchParams.set("includeNonCanonical", "false");
 			} else {
 				url.searchParams.delete("includeNonCanonical");
 			}
@@ -138,7 +141,14 @@ export function useUrlParams() {
 			}
 		}
 
-		const includeNonCanonical = params.get("includeNonCanonical") === "true";
+		// Three-state: "true" → true, "false" → false, anything else → undefined.
+		const rawIncludeNonCanonical = params.get("includeNonCanonical");
+		const includeNonCanonical: boolean | undefined =
+			rawIncludeNonCanonical === "true"
+				? true
+				: rawIncludeNonCanonical === "false"
+					? false
+					: undefined;
 
 		return {
 			query: params.get("query") || undefined,
@@ -147,7 +157,7 @@ export function useUrlParams() {
 			typeIds: typeIds.length > 0 ? typeIds : undefined,
 			excludeMode: excludeMode || undefined,
 			excludeTypeIds: excludeTypeIds.length > 0 ? excludeTypeIds : undefined,
-			includeNonCanonical: includeNonCanonical || undefined,
+			includeNonCanonical,
 			apiUrl: params.get("apiUrl") || undefined,
 			page: page && page > 0 ? page : undefined,
 			boosts: Object.keys(boosts).length > 0 ? boosts : undefined,
